@@ -1,0 +1,16 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/
+# Python
+__pycache__/
+*.pyc
+# build output
+build/
+sim/fw_final.cpp
+sim/*.out
+sim/a.out
+# OpenSCAD / CadQuery logs
+*.log
