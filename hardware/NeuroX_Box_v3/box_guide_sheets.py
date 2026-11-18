@@ -79,10 +79,10 @@ S1 = [
         "Rocker switch into the POWER cutout in the left wall, from outside, until it snaps.",
         "Battery into its rim with foam tape, boost on tape in front of it. Wire: POWER card."]),
     ("s3", 3, "Main board", "4 x M2x6", [
-        "Perfboard with the ESP32-S3 and both pills, USB-C of the ESP32 at the USB slot in the right wall.",
+        "Board wired per the WIRING MAP, ESP32-S3 plugged in, its USB-C at the right-wall slot.",
         "Deepen each of the 4 standoff holes by about 1.5 mm first (1.5-2 mm drill bit, twisted by hand). They are 3 mm deep and an M2x6 needs 4.4 mm. Not more than 1.5 mm: the floor is 2 mm.",
         "4 x M2x6 through the perfboard into the standoffs, snug.",
-        "Pill cables come in through the grommet and plug into the 2 JST sockets."]),
+        "MPU-6050: 4 wires (VCC GND SCL SDA) to its header. Pills are in the HALO now."]),
 ]
 for i, (img, n, title, parts, lines) in enumerate(S1):
     x, y = pos(i); step(sh, d, x, y, PW, PH, crop(f"{GD}/{img}.png"), n, title, lines, parts)
@@ -90,7 +90,7 @@ x, y = pos(3)
 card_dark(d, x, y, PW, PH, "POWER WIRING", [
     ("LiPo", "+ to TP4056 B+,  - to TP4056 B-"),
     ("TP4056", "OUT+ to the rocker, rocker to boost IN+"), ("", "OUT- to boost IN-"),
-    ("Boost", "OUT+ (5.1 V) to ESP32 5V,  OUT- to GND"), ("", "100 uF across the boost output"),
+    ("Boost", "OUT+ (5.1 V) - D1 1N5819 - ESP32 5V,  OUT- to GND"), ("", "100 uF across the boost output"),
     (None, None),
     ("Battery", "boost IN+ - 100 k - GPIO 2 - 100 k - GND, 100 nF to GND"),
     ("Charger", "TP4056 IN+ - 100 k - GPIO 21 - 150 k - GND"),
@@ -99,21 +99,20 @@ card_dark(d, x, y, PW, PH, "POWER WIRING", [
     ("Check", "before plugging the ESP32: 5.1 V at the boost output, polarity right.")])
 x, y = pos(4)
 card_dark(d, x, y, PW, PH, "PIN MAP  (ESP32-S3)", [
-    ("GPIO 1", "pill OUT - forehead / nose"), ("GPIO 4", "pill OUT - temples"),
     ("GPIO 13", "buzzer +"),
-    ("GPIO 47 / 48", "MPU-6050 SDA / SCL  (I²C, 3.3 V)"),
+    ("GPIO 41 / 42", "MPU-6050 SDA / SCL,  VCC to 3.3 V"),
     ("12 / 11 / 10", "screen SCK / MOSI / MISO"), ("9 / 8 / 18 / 14", "screen CS / DC / RESET / LED"),
     ("17 / 16", "touch T_CS / T_IRQ (T_CLK, T_DIN, T_DO share SCK / MOSI / MISO)"),
     ("15 / 7", "button STOP / NEW"), ("6 / 5", "button LEFT / RIGHT-OK"), ("", "other leg of every button to GND"),
     (None, None),
-    ("Tip", "keep the 2 pill OUT wires short and away from the screen wires.")])
+    ("Free", "GPIO 1 + 4 (the pills moved to the HALO C3)")])
 x, y = pos(5)
 card_dark(d, x, y, PW, PH, "YOU NEED", [
     ("Screws", "4 x M3x12 countersunk (lid)"), ("", "10 x M2x6 (4 main board, 4 screen tabs, 2 MPU-6050)"), ("", "8 x M2x10 (buttons, 2 each)"),
     (None, None),
-    ("Parts", "ESP32-S3 DevKitC-1, 2 x BioAmp EXG Pill, 2.8\" ILI9341 screen, 4 x 12x12 tactile switches, KCD1 rocker, TP4056 USB-C, MT3608, LiPo 103450 with protection, buzzer, GY-521 MPU-6050 breakout, perfboard 68 x 50"),
+    ("Parts", "ESP32-S3 DevKitC-1, 2.8\" ILI9341 screen, 4 x 12x12 tactile switches, KCD1 rocker, TP4056 USB-C, MT3608, LiPo 103450 with protection, buzzer, GY-521 MPU-6050 breakout, perfboard 68 x 50"),
     (None, None),
-    ("Also", "4 rubber feet 10 mm, foam tape, 100 k x 3 + 150 k, 100 nF, 100 uF, thin wire, super glue"),
+    ("Also", "4 rubber feet 10 mm, foam tape, 100 k x 3 + 150 k, 100 nF, 100 uF, 1N5819, thin wire, super glue"),
     ("Tools", "Phillips screwdriver, soldering iron, multimeter, 1.5-2 mm drill bit")])
 d.text((W - 50, H - 26), "NeuroX Box v3  -  sheet 1: base", font=RAJ(28), fill=GREY, anchor="rs")
 sh.save(f"{R}/NeuroX_Box_v3_assembly_1_base.png")
@@ -144,9 +143,9 @@ for i, (img, n, title, parts, lines) in enumerate(S2):
     x, y = pos(i); step(sh, d, x, y, PW, PH, crop(f"{GD}/{img}.png"), n, title, lines, parts)
 x, y = pos(4)
 card_dark(d, x, y, 2 * PW + GX, 520, "SAFETY + CHECKS", [
-    ("Electrodes on", "battery only. Never USB, never charging while the electrodes are on someone."),
-    ("Charging", "rocker OFF, USB-C in the CHARGE slot (left side). Electrodes off."),
-    ("Programming", "USB-C on the right side (USB). Electrodes off."),
+    ("Electrodes on", "the HALO runs on its own battery, nothing in its USB-C. The box has no wire to you, so it may charge."),
+    ("Charging", "rocker OFF, USB-C in the CHARGE slot (left side)."),
+    ("Programming", "rocker OFF, then USB-C on the right side (USB)."),
     (None, None),
     ("Nothing on screen", "check the screen wires against the pin map, and the LED pin (GPIO 14)."),
     ("Button does nothing", "the 2 wires must be on DIAGONAL pins of the switch."),

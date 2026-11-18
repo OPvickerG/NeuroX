@@ -31,8 +31,7 @@ module power(g, ex = 0) {
 }
 module mainboard(g, ex = 0) translate([0, 0, ex]) {
   blk(C_mainboard, g ? GH : [0.75, 0.62, 0.38]); blk(C_esp_hdrs, g ? GH : CHIP); blk(C_esp32, g ? GH : [0.15, 0.15, 0.20]);
-  blk(C_pill_face, g ? GH : [0.55, 0.15, 0.55]); blk(C_pill_brain, g ? GH : [0.55, 0.15, 0.55]);
-  blk(C_jst_face, g ? GH : WH); blk(C_jst_brain, g ? GH : WH);
+  // v3.1: the pills moved to the HALO (ESP32-C3) - nothing else on the board
 }
 module screen(g, ex = 0) translate([0, 0, -ex]) {
   bx = BRD_C[0] - BRD_L / 2; by = BRD_C[1] - BRD_W / 2; zb = IH - SCR_STACK;

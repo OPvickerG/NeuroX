@@ -37,8 +37,8 @@ CR_W, CR_L = 18.0, 21.0          # 18 wide: clears the lid screw post next to th
 CAP_D, CAP_FL_D, CAP_FL_T = 11.4, 12.9, 1.2
 PL_D = 8.0
 GAP = 0.1                       # plunger hovers 0.1 mm over the switch button at rest
-CAP_TOP = 1.8                   # normal caps stand 1.8 mm above the lid
-STOP_CAP_TOP = 3.0              # STOP stem top (inside the guard base 1.4 mm)
+CAP_TOP = 4.5                   # normal caps stand 4.5 mm above the lid (was 1.8: too short)
+STOP_CAP_TOP = 4.9              # STOP stem top; with the 2.6 mm top = 7.5 mm, 1.5 mm proud of the guard (6.0)
 STOP_TOP_D, STOP_TOP_H = 16.5, 2.6
 PEG_D, PEG_L = 6.0, 2.6
 
@@ -65,14 +65,20 @@ def cradle():
         c = c.cut(cyl(2.3, z0 - 1, z1 - z0 + 2, 0, sy * SCREW_Y))                             # M2 clearance
     return c
 
-def cap(stop=False):
+def cap(stop=False, sw_h=SW_H, dots=0):
+    """sw_h = YOUR switch: bottom of the black body to the top of its button (pins not counted).
+    A shorter switch gets a longer plunger, so the cap still rests 0.1 mm above the button.
+    dots = 1..5 shallow dots on the cap top (sizer caps only, to tell them apart)."""
     top = STOP_CAP_TOP if stop else CAP_TOP
     zf = Z_LIP                                                         # flange top rests under the lip
+    z_act = Z_FLOOR + sw_h                                             # top of your switch's button
     c = cyl(CAP_D, zf, top - zf)
     if not stop: c = c.faces(">Z").edges().chamfer(0.6)
     c = c.union(cyl(CAP_FL_D, zf - CAP_FL_T, CAP_FL_T))
-    c = c.union(cyl(PL_D, Z_ACT + GAP, (zf - CAP_FL_T) - (Z_ACT + GAP) + 0.01))
+    c = c.union(cyl(PL_D, z_act + GAP, (zf - CAP_FL_T) - (z_act + GAP) + 0.01))
     if stop: c = c.cut(cyl(PEG_D + 0.3, top - PEG_L - 0.2, PEG_L + 1))  # socket for the STOP top
+    for i in range(dots):                                              # marks: a row of 1.3 mm dots, 0.4 deep
+        c = c.cut(cyl(1.3, top - 0.4, 1, (i - (dots - 1) / 2) * 2.0, 0))
     return c
 
 def stop_top():
