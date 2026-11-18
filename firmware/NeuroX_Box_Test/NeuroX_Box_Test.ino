@@ -16,8 +16,8 @@
  *  STOP always sends 'S' to the chair.
  *  Serial monitor 115200:  n next   p previous   1-8 jump to a step   r report   w = try the next rotation
  *
- *  BOARD: "ESP32S3 Dev Module".  LIBRARIES: Adafruit GFX, Adafruit ILI9341,
- *  Adafruit BusIO, XPT2046_Touchscreen.  Same pins as NeuroX_Box_UI.
+ *  BOARD: "ESP32S3 Dev Module".  LIBRARIES: Adafruit GFX, Adafruit ST7735 and ST7789 Library
+ *  (or Adafruit ILI9341), Adafruit BusIO, XPT2046_Touchscreen.  Same pins as NeuroX_Box_UI.
  *  Use the same TFT_ROTATION as in NeuroX_Box_UI, so the touch numbers match.
  * ============================================================================
  */
@@ -28,13 +28,23 @@
 #include <esp_now.h>
 #include <esp_wifi.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_ILI9341.h>
 #include <XPT2046_Touchscreen.h>
 #include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSansBold9pt7b.h>
 #include <Fonts/FreeSansBold12pt7b.h>
 
 // ---------------- settings ----------------
+// ---- screen chip. Your TPM408-2.8 board is an ST7789: driven as an ILI9341 it stays portrait
+//      with red and blue swapped (the ILI9341 start-up writes 0xC0, which on the ST7789 sets
+//      hidden flip bits that cancel the landscape bit).
+#define TFT_DRIVER        7789    // 7789 = ST7789 (TPM408-2.8 boards)   9341 = ILI9341
+#define TFT_INVERT        0       // ST7789: colours look like a photo negative? set 1
+#define TFT_SWAP_RB       0       // red shows blue and blue shows red? set 1
+#if TFT_DRIVER == 7789
+#include <Adafruit_ST7789.h>
+#else
+#include <Adafruit_ILI9341.h>
+#endif
 #define TFT_ROTATION   3              // same as NeuroX_Box_UI
 #define TFT_SPI_HZ     20000000UL     // 20 MHz is safe on a 15 cm ribbon; short wires can go 40000000UL
 #define TOUCH_ROTATION TFT_ROTATION
@@ -59,7 +69,11 @@ enum Fnt  : uint8_t { FT_TINY, FT_SM, FT_MD, FT_LG };
 enum Align : uint8_t { AL_L, AL_C, AL_R };
 static const char *PAGE_NAME[PG_N] = {"Screen", "Buttons", "Touch", "Buzzer", "MPU-6050", "Power", "Radio", "Report"};
 
-static Adafruit_ILI9341 tft(&SPI, PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_RST);
+#if TFT_DRIVER == 7789
+static Adafruit_ST7789 tft(&SPI, PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST);     // note: CS, DC, RST
+#else
+static Adafruit_ILI9341 tft(&SPI, PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_RST);    // note: DC, CS, RST
+#endif
 static XPT2046_Touchscreen ts(PIN_T_CS, PIN_T_IRQ);
 
 static Page page = PG_SCREEN;
@@ -92,6 +106,25 @@ struct __attribute__((packed)) CarPacket { uint8_t magic0, magic1, cmd, seq; };
 static bool radioReady = false; static char radioCmd = 'S'; static uint8_t radioSeq = 0, burst = 0;
 static uint32_t radioLast = 0, radioChange = 0, pulseEnd = 0, txOk = 0, txFail = 0, pulsesSent = 0;
 
+static void screenBegin() {
+#if TFT_DRIVER == 7789
+  tft.init(240, 320); tft.setSPISpeed(TFT_SPI_HZ); tft.invertDisplay(TFT_INVERT);
+#else
+  tft.begin(TFT_SPI_HZ);
+#endif
+}
+static uint8_t madctlFor(uint8_t r) {            // what setRotation(r) writes, for the chosen chip
+#if TFT_DRIVER == 7789
+  static const uint8_t M[4] = {0xC0, 0xA0, 0x00, 0x60};
+#else
+  static const uint8_t M[4] = {0x48, 0x28, 0x88, 0xE8};
+#endif
+  return M[r & 3];
+}
+static void setRot(uint8_t r) {
+  tft.setRotation(r);
+  if (TFT_SWAP_RB) { uint8_t m = madctlFor(r) ^ 0x08; tft.sendCommand(0x36, &m, 1); }   // 0x36 = MADCTL on both chips
+}
 // ============================================================================
 // drawing helpers (direct to the screen)
 // ============================================================================
@@ -175,6 +208,7 @@ static void drawScreenPage() {
   for (uint8_t i = 0; i < 32; ++i) tft.fillRect(10 + i * 9, 92, 9, 12, RGB(i * 8, i * 8, i * 8));
   text("Can you read this clearly?", 160, 128, FT_MD, C_FG, AL_C);
   text("Colours in the right order, no stripes?", 160, 148, FT_SM, C_MUT, AL_C);
+  text("red/blue swapped: TFT_SWAP_RB 1   negative: TFT_INVERT 1", 160, 160, FT_TINY, C_MUT, AL_C);
   for (uint8_t i = 0; i < 3; ++i) {                       // markers that must sit right above the lid buttons
     const int16_t x = i == 2 ? 300 : SOFT_X[i];
     tft.fillTriangle(x - 7, 204, x + 7, 204, x, 214, C_AMBER);
@@ -421,7 +455,7 @@ static void enterPage(Page p) {
     radioSend('S');
   }
   page = p; pageMs = millis(); liveMs = 0; lastDotX = -1; buzz(false); buzzing = false;
-  tft.setRotation(rot); ts.setRotation(rot);             // landscape, re-sent on every page
+  setRot(rot); ts.setRotation(rot);                      // landscape, re-sent on every page
   tft.fillScreen(C_BG); header();
   switch (p) {
     case PG_SCREEN: drawScreenPage(); break;   case PG_BUTTONS: drawButtonsPage(); break;
@@ -515,14 +549,13 @@ void setup() {
   pinMode(PIN_T_CS, OUTPUT); digitalWrite(PIN_T_CS, HIGH);      // keep the touch chip off the bus while the screen starts
   pinMode(PIN_TFT_CS, OUTPUT); digitalWrite(PIN_TFT_CS, HIGH);
   SPI.begin(PIN_TFT_SCK, PIN_TFT_MISO, PIN_TFT_MOSI, -1);
-  tft.begin(TFT_SPI_HZ); tft.setRotation(TFT_ROTATION);
+  screenBegin(); setRot(TFT_ROTATION);
   ts.begin(SPI); ts.setRotation(TOUCH_ROTATION);
   Wire.begin(PIN_SDA, PIN_SCL, 400000);
   radioInit();
   Serial.printf("[RADIO] ESP-NOW %s, box MAC %s\n", radioReady ? "ready" : "FAILED", WiFi.macAddress().c_str());
-  tft.setRotation(rot);                                              // once more, after everything else is up
-  Serial.printf("[TFT] rotation %u, screen reports MADCTL 0x%02X (want 0x%02X). Still portrait? send w\n", (unsigned)rot,
-                tft.readcommand8(ILI9341_RDMADCTL), rot == 1 ? 0x28 : rot == 3 ? 0xE8 : rot == 2 ? 0x88 : 0x48);
+  setRot(rot);                                                       // once more, after everything else is up
+  Serial.printf("[TFT] %s, rotation %u. Upside down? send w twice (or set TFT_ROTATION 1)\n", TFT_DRIVER == 7789 ? "ST7789" : "ILI9341", (unsigned)rot);
   enterPage(PG_SCREEN);
 }
 void loop() {

@@ -27,8 +27,8 @@
  *  BOARD:  Tools > Board > "ESP32S3 Dev Module"   (Arduino-ESP32 core 3.x or 2.x)
  *          Serial monitor on the UART USB-C, or set "USB CDC On Boot: Enabled"
  *          to use the native USB-C.
- *  LIBRARIES (Library Manager):  Adafruit GFX Library, Adafruit ILI9341,
- *          Adafruit BusIO, XPT2046_Touchscreen (Paul Stoffregen)
+ *  LIBRARIES (Library Manager):  Adafruit GFX Library, Adafruit ST7735 and ST7789 Library
+ *          (or Adafruit ILI9341), Adafruit BusIO, XPT2046_Touchscreen (Paul Stoffregen)
  *
  *  PINS  (match the BOX S3 BOARD WIRING sheet)
  *    screen  SCK 12  MOSI 11  MISO 10  CS 9  DC 8  RESET 18  LED 14
@@ -45,7 +45,6 @@
 #include <esp_wifi.h>
 #include <Preferences.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_ILI9341.h>
 #include <XPT2046_Touchscreen.h>
 #include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSansBold9pt7b.h>
@@ -55,6 +54,17 @@
 // =============================================================================
 // 1. SETTINGS YOU MAY CHANGE
 // =============================================================================
+// ---- screen chip. Your TPM408-2.8 board is an ST7789: driven as an ILI9341 it stays portrait
+//      with red and blue swapped (the ILI9341 start-up writes 0xC0, which on the ST7789 sets
+//      hidden flip bits that cancel the landscape bit).
+#define TFT_DRIVER        7789    // 7789 = ST7789 (TPM408-2.8 boards)   9341 = ILI9341
+#define TFT_INVERT        0       // ST7789: colours look like a photo negative? set 1
+#define TFT_SWAP_RB       0       // red shows blue and blue shows red? set 1
+#if TFT_DRIVER == 7789
+#include <Adafruit_ST7789.h>
+#else
+#include <Adafruit_ILI9341.h>
+#endif
 #define START_IN_SIM      1       // 1 = built-in test signals at power-on (no HALO needed)
 #define TFT_ROTATION      3       // 1 or 3 = landscape. Picture upside down? use the other one.
 #define TFT_SPI_HZ        20000000UL   // 20 MHz is safe on a 15 cm ribbon; short wires can go 40000000UL
@@ -198,7 +208,11 @@ static float boxMv = 3900; static bool usbIn = false; static uint32_t pwrMs = 0;
 static bool mpuOk = false; static float tiltPitch = 0, tiltRoll = 0; static uint32_t mpuMs = 0;
 
 // hardware
-static Adafruit_ILI9341 tft(&SPI, PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_RST);
+#if TFT_DRIVER == 7789
+static Adafruit_ST7789 tft(&SPI, PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST);     // note: CS, DC, RST
+#else
+static Adafruit_ILI9341 tft(&SPI, PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_RST);    // note: DC, CS, RST
+#endif
 static XPT2046_Touchscreen ts(PIN_T_CS, PIN_T_IRQ);
 static Preferences prefs;
 static const int16_t SW = 320, SH = 240, STRIP_H = 40;
@@ -849,16 +863,33 @@ static void drawScreen() {
   else if (D.clipped) overlay("CLIPPED", "electrode off: re-gel pads", C_AMBER);
   else if (U.flash.title && (int32_t)(nowMs - U.flash.until) < 0) overlay(U.flash.title, U.flash.sub, U.flash.col);
 }
+static void screenBegin() {
+#if TFT_DRIVER == 7789
+  tft.init(240, 320); tft.setSPISpeed(TFT_SPI_HZ); tft.invertDisplay(TFT_INVERT);
+#else
+  tft.begin(TFT_SPI_HZ);
+#endif
+}
+static uint8_t madctlFor(uint8_t r) {            // what setRotation(r) writes, for the chosen chip
+#if TFT_DRIVER == 7789
+  static const uint8_t M[4] = {0xC0, 0xA0, 0x00, 0x60};
+#else
+  static const uint8_t M[4] = {0x48, 0x28, 0x88, 0xE8};
+#endif
+  return M[r & 3];
+}
+static void setRot(uint8_t r) {
+  tft.setRotation(r);
+  if (TFT_SWAP_RB) { uint8_t m = madctlFor(r) ^ 0x08; tft.sendCommand(0x36, &m, 1); }   // 0x36 = MADCTL on both chips
+}
 // landscape. Sent again every frame: if one command is ever lost, the next frame puts it right.
 static void screenRotate() {
-  tft.setRotation(TFT_ROTATION);
-  static bool told = false;
-  if (!told) { told = true; const uint8_t want = TFT_ROTATION == 1 ? 0x28 : TFT_ROTATION == 3 ? 0xE8 : TFT_ROTATION == 2 ? 0x88 : 0x48;
-    Serial.printf("[TFT] rotation %d (landscape = 1 or 3), screen reports MADCTL 0x%02X, want 0x%02X\n", TFT_ROTATION, tft.readcommand8(ILI9341_RDMADCTL), want); }
+  setRot(TFT_ROTATION);
+  Serial.printf("[TFT] %s, rotation %d (landscape = 1 or 3)\n", TFT_DRIVER == 7789 ? "ST7789" : "ILI9341", TFT_ROTATION);
 }
 static void renderService() {
   if (!cv) return;
-  if (stripIdx == 0) { if (millis() - frameMs < FRAME_MS) return; frameMs = millis(); nowMs = frameMs; tft.setRotation(TFT_ROTATION); }
+  if (stripIdx == 0) { if (millis() - frameMs < FRAME_MS) return; frameMs = millis(); nowMs = frameMs; setRot(TFT_ROTATION); }
   OY = (int16_t)(stripIdx * STRIP_H);
   cv->fillScreen(C_BG);
   drawScreen();
@@ -880,7 +911,7 @@ void setup() {
   pinMode(PIN_T_CS, OUTPUT); digitalWrite(PIN_T_CS, HIGH);      // keep the touch chip off the bus while the screen starts
   pinMode(PIN_TFT_CS, OUTPUT); digitalWrite(PIN_TFT_CS, HIGH);
   SPI.begin(PIN_TFT_SCK, PIN_TFT_MISO, PIN_TFT_MOSI, -1);
-  tft.begin(TFT_SPI_HZ); tft.setRotation(TFT_ROTATION); tft.fillScreen(C_BG);
+  screenBegin(); setRot(TFT_ROTATION); tft.fillScreen(C_BG);
   if (TOUCH_ENABLED) { ts.begin(SPI); ts.setRotation(TFT_ROTATION); }
   cv = new GFXcanvas16(SW, STRIP_H);
   if (!cv || !cv->getBuffer()) Serial.println("[TFT] ERROR: no memory for the draw buffer");
