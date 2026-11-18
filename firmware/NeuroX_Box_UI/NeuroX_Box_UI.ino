@@ -69,6 +69,7 @@
 #define TFT_ROTATION      3       // 1 or 3 = landscape. Picture upside down? use the other one.
 #define TFT_SPI_HZ        20000000UL   // 20 MHz is safe on a 15 cm ribbon; short wires can go 40000000UL
 #define TOUCH_ENABLED     1
+#define TOUCH_USE_IRQ     0       // 0 = poll the touch chip (works even if T_IRQ is not wired)
 #define TOUCH_SWAP_XY     0       // NeuroX_Box_Test prints this and the 4 TS_ values below
 #define TOUCH_FLIP_X      0       // tap lands mirrored left/right? set 1
 #define TOUCH_FLIP_Y      0       // tap lands mirrored up/down? set 1
@@ -213,7 +214,7 @@ static Adafruit_ST7789 tft(&SPI, PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST);     // no
 #else
 static Adafruit_ILI9341 tft(&SPI, PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_RST);    // note: DC, CS, RST
 #endif
-static XPT2046_Touchscreen ts(PIN_T_CS, PIN_T_IRQ);
+static XPT2046_Touchscreen ts(PIN_T_CS, TOUCH_USE_IRQ ? PIN_T_IRQ : 255);
 static Preferences prefs;
 static const int16_t SW = 320, SH = 240, STRIP_H = 40;
 static GFXcanvas16 *cv = nullptr;
@@ -565,6 +566,10 @@ static void touchService() {
   if (!TOUCH_ENABLED || stripIdx != 0 || millis() - tMs < 30) return;    // never in the middle of a frame
   tMs = millis();
   const bool t = ts.touched();
+  static uint32_t downSince = 0; static bool warned = false;
+  if (t) { if (!downSince) downSince = millis(); else if (!warned && millis() - downSince > 5000) { warned = true;
+    Serial.println("[TOUCH] pressed for 5 s non-stop: GPIO 10 (MISO) gets no answer from T_DO? Run NeuroX_Box_Test step 3."); } }
+  else downSince = 0;
   if (t && !tWas) {
     TS_Point p = ts.getPoint();
     if (TOUCH_SWAP_XY) { const int16_t t2 = p.x; p.x = p.y; p.y = t2; }

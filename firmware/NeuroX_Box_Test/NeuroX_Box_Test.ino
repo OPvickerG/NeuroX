@@ -15,6 +15,7 @@
  *  Buttons on most pages:  LEFT / NEW / OK = the labels at the bottom of the screen.
  *  STOP always sends 'S' to the chair.
  *  Serial monitor 115200:  n next   p previous   1-8 jump to a step   r report   w = try the next rotation
+ *                          z = print raw touch numbers (any page)
  *
  *  BOARD: "ESP32S3 Dev Module".  LIBRARIES: Adafruit GFX, Adafruit ST7735 and ST7789 Library
  *  (or Adafruit ILI9341), Adafruit BusIO, XPT2046_Touchscreen.  Same pins as NeuroX_Box_UI.
@@ -48,6 +49,7 @@
 #define TFT_ROTATION   3              // same as NeuroX_Box_UI
 #define TFT_SPI_HZ     20000000UL     // 20 MHz is safe on a 15 cm ribbon; short wires can go 40000000UL
 #define TOUCH_ROTATION TFT_ROTATION
+#define TOUCH_USE_IRQ  0              // 0 = poll the touch chip (works even if T_IRQ is not wired)
 
 // ---------------- pins (BOX S3 BOARD WIRING) ----------------
 static const int8_t PIN_TFT_SCK = 12, PIN_TFT_MOSI = 11, PIN_TFT_MISO = 10;
@@ -74,7 +76,7 @@ static Adafruit_ST7789 tft(&SPI, PIN_TFT_CS, PIN_TFT_DC, PIN_TFT_RST);     // no
 #else
 static Adafruit_ILI9341 tft(&SPI, PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_RST);    // note: DC, CS, RST
 #endif
-static XPT2046_Touchscreen ts(PIN_T_CS, PIN_T_IRQ);
+static XPT2046_Touchscreen ts(PIN_T_CS, TOUCH_USE_IRQ ? PIN_T_IRQ : 255);
 
 static Page page = PG_SCREEN;
 static uint8_t rot = TFT_ROTATION;
@@ -92,6 +94,7 @@ static const int16_t TGT_X[4] = {24, 296, 24, 296}, TGT_Y[4] = {40, 40, 206, 206
 static int16_t tRawX[4], tRawY[4]; static uint8_t tStep = 0; static bool tWas = false; static uint32_t tMs = 0;
 static int32_t calMinX = 300, calMaxX = 3800, calMinY = 300, calMaxY = 3800; static bool calSwap = false, calDone = false;
 static int16_t lastDotX = -1, lastDotY = -1;
+static bool rawDump = false; static uint32_t rawMs = 0, sameSince = 0; static int16_t prevRx = -1, prevRy = -1;
 // buzzer
 static const uint32_t BUZZ_FREQ_HZ = 2048, BUZZ_DUTY = 128; static const uint8_t BUZZ_LEDC_CH = 2;
 static uint32_t buzzOffAt = 0, buzzNextAt = 0; static bool buzzing = false;
@@ -252,6 +255,7 @@ static void drawTouchPage() {
   drawTarget(0, C_AMBER);
   text("Tap the orange target", 160, 112, FT_MD, C_FG, AL_C);
   text("use a fingernail or a stylus, tap the centre", 160, 134, FT_TINY, C_MUT, AL_C);
+  text("live numbers from the touch chip:", 160, 148, FT_TINY, C_MUT, AL_C);
   softKeys("redo", "skip", "");
 }
 static void computeTouchCal() {
@@ -280,7 +284,26 @@ static void computeTouchCal() {
   text("tap anywhere: the dot must land under it", 160, 136, FT_TINY, C_AMBER, AL_C);
   softKeys("redo", "", "next");
 }
+// raw touch numbers + what they mean (the touch chip answers on MISO, GPIO 10)
+static const char *touchVerdict(int16_t x, int16_t y, int16_t z) {
+  if (z >= 300 && prevRx >= 0 && abs(x - prevRx) < 6 && abs(y - prevRy) < 6) { if (!sameSince) sameSince = millis(); } else sameSince = 0;
+  if (sameSince && millis() - sameSince > 2500 && (x <= 5 || x >= 4090 || y <= 5 || y >= 4090))
+    return "STUCK: no answer on GPIO 10 (T_DO? screen SDO?)";
+  if (sameSince && millis() - sameSince > 6000) return "same spot 6 s: released? else MISO fault";
+  if (z >= 300) return "pressed - good";
+  if (z > 0) return "light touch: press harder or use a stylus";
+  return "not pressed (z must pass 300 when pressed)";
+}
+static void touchRawLine(int16_t y) {
+  if (millis() - rawMs < 120) return; rawMs = millis();
+  TS_Point p = ts.getPoint();
+  const char *v = touchVerdict(p.x, p.y, p.z); prevRx = p.x; prevRy = p.y;
+  char b[48]; snprintf(b, sizeof(b), "raw x %4d  y %4d  z %4d", p.x, p.y, p.z);
+  valueBox(10, y, 300, b, FT_TINY, p.z >= 300 ? C_GREEN : C_MUT, AL_C);
+  valueBox(0, y + 14, 320, v, FT_TINY, strncmp(v, "STUCK", 5) == 0 ? C_RED : C_MUT, AL_C);
+}
 static void touchLive() {
+  touchRawLine(calDone ? 186 : 160);
   if (millis() - tMs < 25) return; tMs = millis();
   const bool t = ts.touched();
   if (t && !tWas) {
@@ -528,6 +551,7 @@ static void serialService() {
     else if (c == 'p') enterPage((Page)max<int>(page - 1, 0));
     else if (c >= '1' && c <= '8') enterPage((Page)(c - '1'));
     else if (c == 'r') printReport();
+    else if (c == 'z') { rawDump = !rawDump; Serial.printf("[TOUCH] raw dump %s\n", rawDump ? "ON" : "off"); }
     else if (c == 'w') { rot = (uint8_t)((rot + 1) % 4); Serial.printf("[TFT] rotation %u %s\n", (unsigned)rot, (rot & 1) ? "(landscape)" : "(portrait: this layout needs 1 or 3)"); enterPage(page); }
   }
 }
@@ -560,6 +584,8 @@ void setup() {
 }
 void loop() {
   serialService();
+  if (rawDump && millis() - rawMs > 200 && page != PG_TOUCH) { rawMs = millis(); TS_Point p = ts.getPoint();
+    Serial.printf("[TOUCH] raw x %d  y %d  z %d   (%s)\n", p.x, p.y, p.z, touchVerdict(p.x, p.y, p.z)); prevRx = p.x; prevRy = p.y; }
   buttonsService();
   radioService();
   if (buzzing && (int32_t)(millis() - buzzOffAt) >= 0) { buzz(false); buzzing = false; }
