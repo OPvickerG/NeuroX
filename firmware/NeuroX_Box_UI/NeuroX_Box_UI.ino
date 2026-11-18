@@ -57,7 +57,7 @@
 // =============================================================================
 #define START_IN_SIM      1       // 1 = built-in test signals at power-on (no HALO needed)
 #define TFT_ROTATION      3       // 1 or 3 = landscape. Picture upside down? use the other one.
-#define TFT_SPI_HZ        40000000UL   // garbage on screen? try 27000000UL
+#define TFT_SPI_HZ        20000000UL   // 20 MHz is safe on a 15 cm ribbon; short wires can go 40000000UL
 #define TOUCH_ENABLED     1
 #define TOUCH_SWAP_XY     0       // NeuroX_Box_Test prints this and the 4 TS_ values below
 #define TOUCH_FLIP_X      0       // tap lands mirrored left/right? set 1
@@ -849,9 +849,16 @@ static void drawScreen() {
   else if (D.clipped) overlay("CLIPPED", "electrode off: re-gel pads", C_AMBER);
   else if (U.flash.title && (int32_t)(nowMs - U.flash.until) < 0) overlay(U.flash.title, U.flash.sub, U.flash.col);
 }
+// landscape. Sent again every frame: if one command is ever lost, the next frame puts it right.
+static void screenRotate() {
+  tft.setRotation(TFT_ROTATION);
+  static bool told = false;
+  if (!told) { told = true; const uint8_t want = TFT_ROTATION == 1 ? 0x28 : TFT_ROTATION == 3 ? 0xE8 : TFT_ROTATION == 2 ? 0x88 : 0x48;
+    Serial.printf("[TFT] rotation %d (landscape = 1 or 3), screen reports MADCTL 0x%02X, want 0x%02X\n", TFT_ROTATION, tft.readcommand8(ILI9341_RDMADCTL), want); }
+}
 static void renderService() {
   if (!cv) return;
-  if (stripIdx == 0) { if (millis() - frameMs < FRAME_MS) return; frameMs = millis(); nowMs = frameMs; }
+  if (stripIdx == 0) { if (millis() - frameMs < FRAME_MS) return; frameMs = millis(); nowMs = frameMs; tft.setRotation(TFT_ROTATION); }
   OY = (int16_t)(stripIdx * STRIP_H);
   cv->fillScreen(C_BG);
   drawScreen();
@@ -870,6 +877,8 @@ void setup() {
   pinMode(PIN_TFT_LED, OUTPUT); digitalWrite(PIN_TFT_LED, HIGH);
   analogReadResolution(12); analogSetPinAttenuation(PIN_VBAT, ADC_11db);
   buzzInit();
+  pinMode(PIN_T_CS, OUTPUT); digitalWrite(PIN_T_CS, HIGH);      // keep the touch chip off the bus while the screen starts
+  pinMode(PIN_TFT_CS, OUTPUT); digitalWrite(PIN_TFT_CS, HIGH);
   SPI.begin(PIN_TFT_SCK, PIN_TFT_MISO, PIN_TFT_MOSI, -1);
   tft.begin(TFT_SPI_HZ); tft.setRotation(TFT_ROTATION); tft.fillScreen(C_BG);
   if (TOUCH_ENABLED) { ts.begin(SPI); ts.setRotation(TFT_ROTATION); }
@@ -880,6 +889,7 @@ void setup() {
   radioInit();
   setMode(M_BOOT);
   simLastUs = micros();
+  screenRotate();                                    // once more, after everything else is up
   help();
 }
 void loop() {

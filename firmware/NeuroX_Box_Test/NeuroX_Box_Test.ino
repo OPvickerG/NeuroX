@@ -14,7 +14,7 @@
  *
  *  Buttons on most pages:  LEFT / NEW / OK = the labels at the bottom of the screen.
  *  STOP always sends 'S' to the chair.
- *  Serial monitor 115200:  n next   p previous   1-8 jump to a step   r report
+ *  Serial monitor 115200:  n next   p previous   1-8 jump to a step   r report   w = try the next rotation
  *
  *  BOARD: "ESP32S3 Dev Module".  LIBRARIES: Adafruit GFX, Adafruit ILI9341,
  *  Adafruit BusIO, XPT2046_Touchscreen.  Same pins as NeuroX_Box_UI.
@@ -36,7 +36,7 @@
 
 // ---------------- settings ----------------
 #define TFT_ROTATION   3              // same as NeuroX_Box_UI
-#define TFT_SPI_HZ     40000000UL     // garbage on screen? try 27000000UL
+#define TFT_SPI_HZ     20000000UL     // 20 MHz is safe on a 15 cm ribbon; short wires can go 40000000UL
 #define TOUCH_ROTATION TFT_ROTATION
 
 // ---------------- pins (BOX S3 BOARD WIRING) ----------------
@@ -63,6 +63,7 @@ static Adafruit_ILI9341 tft(&SPI, PIN_TFT_DC, PIN_TFT_CS, PIN_TFT_RST);
 static XPT2046_Touchscreen ts(PIN_T_CS, PIN_T_IRQ);
 
 static Page page = PG_SCREEN;
+static uint8_t rot = TFT_ROTATION;
 static Res  result[PG_N];
 static char note[PG_N][40];
 static uint32_t pageMs = 0, liveMs = 0;
@@ -420,6 +421,7 @@ static void enterPage(Page p) {
     radioSend('S');
   }
   page = p; pageMs = millis(); liveMs = 0; lastDotX = -1; buzz(false); buzzing = false;
+  tft.setRotation(rot); ts.setRotation(rot);             // landscape, re-sent on every page
   tft.fillScreen(C_BG); header();
   switch (p) {
     case PG_SCREEN: drawScreenPage(); break;   case PG_BUTTONS: drawButtonsPage(); break;
@@ -492,6 +494,7 @@ static void serialService() {
     else if (c == 'p') enterPage((Page)max<int>(page - 1, 0));
     else if (c >= '1' && c <= '8') enterPage((Page)(c - '1'));
     else if (c == 'r') printReport();
+    else if (c == 'w') { rot = (uint8_t)((rot + 1) % 4); Serial.printf("[TFT] rotation %u %s\n", (unsigned)rot, (rot & 1) ? "(landscape)" : "(portrait: this layout needs 1 or 3)"); enterPage(page); }
   }
 }
 
@@ -509,12 +512,17 @@ void setup() {
   ledcSetup(BUZZ_LEDC_CH, BUZZ_FREQ_HZ, 8); ledcAttachPin(PIN_BUZZER, BUZZ_LEDC_CH);
 #endif
   buzz(false);
+  pinMode(PIN_T_CS, OUTPUT); digitalWrite(PIN_T_CS, HIGH);      // keep the touch chip off the bus while the screen starts
+  pinMode(PIN_TFT_CS, OUTPUT); digitalWrite(PIN_TFT_CS, HIGH);
   SPI.begin(PIN_TFT_SCK, PIN_TFT_MISO, PIN_TFT_MOSI, -1);
   tft.begin(TFT_SPI_HZ); tft.setRotation(TFT_ROTATION);
   ts.begin(SPI); ts.setRotation(TOUCH_ROTATION);
   Wire.begin(PIN_SDA, PIN_SCL, 400000);
   radioInit();
   Serial.printf("[RADIO] ESP-NOW %s, box MAC %s\n", radioReady ? "ready" : "FAILED", WiFi.macAddress().c_str());
+  tft.setRotation(rot);                                              // once more, after everything else is up
+  Serial.printf("[TFT] rotation %u, screen reports MADCTL 0x%02X (want 0x%02X). Still portrait? send w\n", (unsigned)rot,
+                tft.readcommand8(ILI9341_RDMADCTL), rot == 1 ? 0x28 : rot == 3 ? 0xE8 : rot == 2 ? 0x88 : 0x48);
   enterPage(PG_SCREEN);
 }
 void loop() {
