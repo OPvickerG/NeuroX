@@ -59,6 +59,7 @@
 #define TFT_ROTATION      3       // 1 or 3 = landscape. Picture upside down? use the other one.
 #define TFT_SPI_HZ        40000000UL   // garbage on screen? try 27000000UL
 #define TOUCH_ENABLED     1
+#define TOUCH_SWAP_XY     0       // NeuroX_Box_Test prints this and the 4 TS_ values below
 #define TOUCH_FLIP_X      0       // tap lands mirrored left/right? set 1
 #define TOUCH_FLIP_Y      0       // tap lands mirrored up/down? set 1
 #define BUZZER_ENABLED    1
@@ -552,6 +553,7 @@ static void touchService() {
   const bool t = ts.touched();
   if (t && !tWas) {
     TS_Point p = ts.getPoint();
+    if (TOUCH_SWAP_XY) { const int16_t t2 = p.x; p.x = p.y; p.y = t2; }
     int16_t x = (int16_t)map(p.x, TS_MINX, TS_MAXX, 0, SW), y = (int16_t)map(p.y, TS_MINY, TS_MAXY, 0, SH);
     if (TOUCH_FLIP_X) x = SW - x; if (TOUCH_FLIP_Y) y = SH - y;
     x = constrain(x, 0, SW - 1); y = constrain(y, 0, SH - 1);
