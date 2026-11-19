@@ -1,0 +1,545 @@
+<title>NeuroX Box UI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: the box lid drawn to its real CAD size (162.8 x 100.8 mm) with the live 320x240 screen in its window; a wearer/radio panel beside it. */
+:root {
+  --bg: #eef0f4; --surface: #ffffff; --line: #d6dae2; --fg: #171b24; --muted: #5d6576;
+  --accent: #1257d1; --accent-soft: #e3ecfb; --stop: #d61a1f; --ok: #12924f; --warn: #b26a00;
+  --pla-gray: #2b303d; --pla-white: #f0f2f5; --pla-blue: #1257d1; --pla-red: #d61a1f;
+  --display: "Orbitron", "Rajdhani", system-ui, sans-serif;
+  --body: "Rajdhani", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1218; --surface: #181c25; --line: #2a303c; --fg: #e8ecf4; --muted: #95a0b4;
+  --accent: #5b93ff; --accent-soft: #1b2741; --stop: #ff4a4f; --ok: #33d17a; --warn: #f0a531; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f1218; --surface: #181c25; --line: #2a303c; --fg: #e8ecf4; --muted: #95a0b4;
+  --accent: #5b93ff; --accent-soft: #1b2741; --stop: #ff4a4f; --ok: #33d17a; --warn: #f0a531; color-scheme: dark }
+html, body { height: auto }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.4;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 32px }
+.wrap { max-width: 1240px; margin: 0 auto; display: grid; gap: 18px }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px }
+h1 { font-family: var(--display); font-weight: 900; font-size: clamp(22px, 3vw, 30px); letter-spacing: .04em; margin: 0; text-wrap: balance }
+h1 span { color: var(--accent) }
+.sub { color: var(--muted); font-size: 16px; font-weight: 600; margin: 0 }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 18px; align-items: start }
+@media (max-width: 960px) { .main { grid-template-columns: minmax(0, 1fr) } }
+
+/* ---------- the lid ---------- */
+.stage { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: clamp(10px, 2.4vw, 28px); min-width: 0; display: grid; gap: 12px }
+.lid { position: relative; width: 100%; aspect-ratio: 162.8 / 100.8; max-width: 100%; user-select: none; -webkit-user-select: none }
+.lid svg { position: absolute; inset: 0; width: 100%; height: 100% }
+#scr { position: absolute; left: 10.074%; top: 19.147%; width: 35.995%; height: 43.849%; border-radius: 2px; image-rendering: auto; touch-action: manipulation; cursor: pointer }
+.btn { position: absolute; border-radius: 50%; border: 0; padding: 0; cursor: pointer; transform: translate(-50%, -50%);
+  width: 7.0%; aspect-ratio: 1; background: radial-gradient(circle at 40% 35%, #3b4150, #1c2029 70%); box-shadow: 0 .35vw 0 #0c0e13, 0 .5vw .9vw rgba(0,0,0,.35);
+  transition: transform .06s, box-shadow .06s }
+.btn.pressed, .btn:active { transform: translate(-50%, -46%); box-shadow: 0 .1vw 0 #0c0e13, 0 .2vw .4vw rgba(0,0,0,.3) }
+.btn.stop { width: 10.1%; background: radial-gradient(circle at 40% 35%, #ff5a5e, #b4141a 72%); box-shadow: 0 .45vw 0 #6d0b0f, 0 .6vw 1vw rgba(0,0,0,.35) }
+.btn.stop.pressed, .btn.stop:active { box-shadow: 0 .12vw 0 #6d0b0f, 0 .2vw .4vw rgba(0,0,0,.3) }
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px }
+.btn .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--muted); font-size: 15px; font-weight: 600 }
+.legend b { font-family: var(--mono); font-weight: 700; color: var(--fg); background: var(--accent-soft); border-radius: 5px; padding: 0 6px; font-size: 13px }
+
+/* ---------- side panel ---------- */
+aside { display: grid; gap: 14px; min-width: 0 }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; min-width: 0 }
+.card h2 { margin: 0; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 700; display: flex; justify-content: space-between; align-items: center }
+.gest { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px }
+.gest button, .tog { font: 700 16px/1.1 var(--body); color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 6px; cursor: pointer; display: grid; gap: 3px; justify-items: center; touch-action: none }
+.gest button small { font: 500 11px var(--mono); color: var(--muted) }
+.gest button:hover, .tog:hover { border-color: var(--accent) }
+.gest button.on { background: var(--accent); color: #fff; border-color: var(--accent) }
+.gest button.on small { color: #dbe6ff }
+.gest button:focus-visible, .tog:focus-visible, input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-weight: 600 }
+.row label { flex: 1 }
+.switch { appearance: none; -webkit-appearance: none; width: 42px; height: 24px; border-radius: 12px; background: var(--line); position: relative; cursor: pointer; flex: none; transition: background .15s }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; box-shadow: 0 1px 2px rgba(0,0,0,.3) }
+.switch:checked { background: var(--accent) }
+.switch:checked::after { left: 21px }
+input[type=range] { width: 130px; accent-color: var(--accent) }
+.val { font: 700 13px var(--mono); color: var(--muted); width: 44px; text-align: right; font-variant-numeric: tabular-nums }
+.tog { grid-auto-flow: column; justify-content: center; gap: 8px; padding: 9px 10px }
+.tog.on { background: var(--accent-soft); border-color: var(--accent); color: var(--accent) }
+.log { font: 500 13px/1.55 var(--mono); font-variant-numeric: tabular-nums; margin: 0; padding: 0; list-style: none; display: grid; gap: 2px; max-height: 210px; overflow: auto }
+.log li { display: grid; grid-template-columns: 92px 26px 1fr; gap: 6px; color: var(--muted) }
+.log li .c { font-weight: 700; text-align: center; border-radius: 4px; color: #fff }
+.c.F { background: var(--ok) } .c.R { background: var(--accent) } .c.S { background: #6a7284 } .c.X { background: var(--stop) }
+.log li.empty { display: block }
+.note { color: var(--muted); font-size: 14px; margin: 0; max-width: 70ch }
+.pill { font: 700 11px var(--mono); letter-spacing: .04em; padding: 2px 7px; border-radius: 99px; background: var(--accent-soft); color: var(--accent) }
+@media (prefers-reduced-motion: reduce) { .btn, .switch, .switch::after { transition: none } }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>NEUROX <span>BOX</span> UI</h1>
+    <p class="sub">Demo, no hardware: be the wearer on the right and drive the box with its own buttons.</p>
+  </header>
+
+  <div class="main">
+    <section class="stage" aria-label="NeuroX box lid">
+      <div class="lid" id="lid">
+        <svg viewBox="0 0 162.8 100.8" aria-hidden="true">
+          <defs>
+            <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7f8fa"/><stop offset="1" stop-color="#e4e7ec"/></linearGradient>
+          </defs>
+          <!-- body rim + lid plate (chamfered corners like the print) -->
+          <path d="M6 0 H156.8 L162.8 6 V94.8 L156.8 100.8 H6 L0 94.8 V6 Z" fill="#2b303d"/>
+          <path d="M7.4 2.4 H155.4 L160.4 7.4 V93.4 L155.4 98.4 H7.4 L2.4 93.4 V7.4 Z" fill="url(#plate)"/>
+          <path d="M8.6 4.4 H154.2 L158.4 8.6 V92.2 L154.2 96.4 H8.6 L4.4 92.2 V8.6 Z" fill="none" stroke="#1257d1" stroke-width=".9"/>
+          <!-- screen bezel -->
+          <rect x="13.4" y="16.3" width="64.6" height="50.2" rx="2.2" fill="#2b303d"/>
+          <rect x="16.4" y="19.3" width="58.6" height="44.2" fill="#05070a"/>
+          <!-- button rings (blue) -->
+          <g fill="none" stroke="#1257d1" stroke-width="1.6">
+            <circle cx="23.4" cy="85.4" r="8.4"/><circle cx="47.4" cy="85.4" r="8.4"/><circle cx="71.4" cy="85.4" r="8.4"/>
+          </g>
+          <!-- STOP guard -->
+          <circle cx="128.4" cy="18.4" r="12.2" fill="#d61a1f"/>
+          <circle cx="128.4" cy="18.4" r="9.6" fill="#a90f14"/>
+          <!-- engraved labels -->
+          <g font-family="Rajdhani, sans-serif" font-weight="700" font-size="3.1" fill="#8a91a0" text-anchor="middle" letter-spacing=".3">
+            <text x="23.4" y="75">LEFT</text><text x="47.4" y="75">NEW</text><text x="71.4" y="75">OK</text>
+            <text x="128.4" y="35.4" fill="#d61a1f">STOP</text>
+            <text x="45.7" y="71.2" font-size="2.4" fill="#a4aab6">2.8" 320 × 240</text>
+          </g>
+          <!-- logo mark -->
+          <g transform="translate(126 64)">
+            <circle r="13" fill="none" stroke="#1257d1" stroke-width="1.8" stroke-dasharray="58 8" transform="rotate(-60)"/>
+            <path d="M-6 6.5 V-6.5 L6 6.5 V-6.5" fill="none" stroke="#1257d1" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+            <circle cx="9.8" cy="-8.6" r="1.3" fill="#d61a1f"/>
+          </g>
+          <text x="126" y="84.5" font-family="Orbitron, sans-serif" font-weight="900" font-size="4.2" fill="#2b303d" text-anchor="middle" letter-spacing=".6">NEUROX</text>
+          <!-- lid screws -->
+          <g fill="#c3c8d1"><circle cx="9.4" cy="91.4" r="1.7"/><circle cx="153.4" cy="91.4" r="1.7"/><circle cx="10.4" cy="10.4" r="1.7"/><circle cx="152.4" cy="10.4" r="1.7"/></g>
+        </svg>
+        <canvas id="scr" width="640" height="480" aria-label="Box screen, 320 by 240 pixels" role="img"></canvas>
+        <button class="btn" id="b-left" style="left:14.373%;top:84.722%" data-k="left"><span class="sr">LEFT</span></button>
+        <button class="btn" id="b-new" style="left:29.115%;top:84.722%" data-k="new"><span class="sr">NEW</span></button>
+        <button class="btn" id="b-ok" style="left:43.857%;top:84.722%" data-k="ok"><span class="sr">OK</span></button>
+        <button class="btn stop" id="b-stop" style="left:78.870%;top:18.254%" data-k="stop"><span class="sr">STOP</span></button>
+      </div>
+      <div class="legend">
+        <span><b>←</b> LEFT</span><span><b>N</b> NEW</span><span><b>Enter</b> / <b>→</b> OK</span><span><b>Space</b> STOP</span>
+        <span><b>B</b> blink</span><span><b>J</b> clench</span><span><b>E</b> hold to close eyes</span>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card">
+        <h2>Wearer (HALO) <span class="pill" id="hint">blink 5×</span></h2>
+        <div class="gest">
+          <button id="g-blink"><span>Blink</span><small>B</small></button>
+          <button id="g-clench"><span>Clench</span><small>J</small></button>
+          <button id="g-eyes"><span>Close eyes</span><small>hold E</small></button>
+        </div>
+        <button class="tog" id="auto" aria-pressed="false">Auto wearer: does what the screen asks</button>
+      </div>
+
+      <div class="card">
+        <h2>Conditions</h2>
+        <div class="row"><label for="c-link">HALO radio link</label><input class="switch" type="checkbox" id="c-link" checked></div>
+        <div class="row"><label for="c-skin">Electrodes on skin</label><input class="switch" type="checkbox" id="c-skin" checked></div>
+        <div class="row"><label for="c-usb">USB in CHARGE slot</label><input class="switch" type="checkbox" id="c-usb"></div>
+        <div class="row"><label for="c-hbat">HALO battery</label><input type="range" id="c-hbat" min="0" max="100" value="64"><span class="val" id="v-hbat">64%</span></div>
+        <div class="row"><label for="c-tilt">Box tilt (MPU-6050)</label><input type="range" id="c-tilt" min="-30" max="30" value="3"><span class="val" id="v-tilt">3°</span></div>
+        <div class="row"><label for="c-snd">Buzzer sound</label><input class="switch" type="checkbox" id="c-snd" checked></div>
+      </div>
+
+      <div class="card">
+        <h2>Radio → wheelchair <span class="pill">ESP-NOW ch 1</span></h2>
+        <ul class="log" id="log"><li class="empty">Nothing sent yet. The chair only moves when the box is unlocked.</li></ul>
+      </div>
+    </aside>
+  </div>
+  <p class="note">The screen is drawn in real 320 × 240 ILI9341 pixels (shown at 2×), so each layout maps straight to TFT_eSPI calls. The labels along its bottom edge sit right above the LEFT, NEW and OK buttons, as they do on the printed lid. The flow follows the firmware: it calibrates at power-on, starts locked, unlocks after 3 s of eyes firmly closed, locks again after 3 s idle, and STOP stops and locks at any time.</p>
+</div>
+
+<script>
+(() => {
+  const cv = document.getElementById('scr'), g = cv.getContext('2d');
+  g.scale(2, 2);                       // draw in real screen pixels (320 x 240)
+  const W = 320, H = 240;
+  const P = { bg: '#0a0d13', panel: '#151a24', panel2: '#1d2431', line: '#2a3242', fg: '#e9edf5', mut: '#7f8a9e',
+              blue: '#2f7bff', teal: '#1fc6cf', green: '#2bd07b', amber: '#ffb020', red: '#ff3b3b', violet: '#a87bff' };
+  const F = (w, s, fam) => `${w} ${s}px ${fam === 'o' ? 'Orbitron, sans-serif' : fam === 'm' ? '"JetBrains Mono", monospace' : 'Rajdhani, sans-serif'}`;
+  const SOFT_X = [0.12 * W, 0.53 * W, 0.94 * W];   // above LEFT / NEW / OK on the lid
+
+  // ---------------- state ----------------
+  const S = {
+    t: 0, mode: 'boot', bootT: 0, calibrated: false, calStep: 0, calCount: 0, hold: 0, eyes: false,
+    idle: 0, AUTOLOCK: 3000, cmd: 'S', cmdUntil: 0, lastCmd: null, lastCmdT: -1e9, refr: 0,
+    flash: null, flashUntil: 0, menuSel: 0, page: null, menuIdle: 0, sens: 1.0,
+    link: true, skin: true, usb: false, hbat: 64, bbat: 78, tilt: 3, sound: true, auto: false, autoT: 0,
+    blinkT: -1e9, clenchT: -1e9, ticks: 0, pktLoss: 0.4, rssi: -54
+  };
+  const MENU = [{ k: 'signals', n: 'Signals', d: 'both pills live' }, { k: 'sens', n: 'Sensitivity', d: 'trigger level' },
+                { k: 'radio', n: 'Radio', d: 'HALO + chair links' }, { k: 'power', n: 'Power + tilt', d: 'batteries, MPU' },
+                { k: 'exit', n: 'Exit', d: 'back, locked' }];
+  const SENS = [0.8, 0.9, 1.0, 1.15, 1.3, 1.4];
+
+  // ---------------- signals (256 Hz) ----------------
+  const N = 640, V = new Float32Array(N), Hs = new Float32Array(N), E = new Float32Array(N); let head = 0, acc = 0;
+  let emgEnv = 0;
+  function sample() {
+    const t = S.t;
+    const db = (t - S.blinkT) / 1000, dc = (t - S.clenchT) / 1000;
+    let v = (Math.random() - .5) * 26 + Math.sin(t / 900) * 18;
+    let h = (Math.random() - .5) * 20 + Math.sin(t / 1300 + 1) * 14;
+    if (db >= 0 && db < .5) v += 620 * Math.exp(-((db - .14) ** 2) / 0.0035);
+    let emg = 22;
+    if (dc >= 0 && dc < .55) emg = 820 * Math.min(1, dc * 12) * (1 - Math.max(0, dc - .4) / .15);
+    if (S.eyes) { v += 260; emg = Math.max(emg, 240) }
+    emgEnv += (emg - emgEnv) * .08;
+    v += (Math.random() - .5) * emg * .9; h += (Math.random() - .5) * emg * 1.2;
+    if (!S.skin) { v = 2047; h = -2048 + Math.random() * 6 }
+    if (!S.link) { v = 0; h = 0; emgEnv = 0 }
+    V[head] = v; Hs[head] = h; E[head] = emgEnv; head = (head + 1) % N;
+  }
+
+  // ---------------- sound (buzzer) ----------------
+  let ac = null;
+  function beep(f = 2300, ms = 70, delay = 0) {
+    if (!S.sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      const o = ac.createOscillator(), gn = ac.createGain(); o.type = 'square'; o.frequency.value = f;
+      const t0 = ac.currentTime + delay / 1000; gn.gain.setValueAtTime(0.0001, t0); gn.gain.exponentialRampToValueAtTime(0.05, t0 + .005);
+      gn.gain.exponentialRampToValueAtTime(0.0001, t0 + ms / 1000); o.connect(gn).connect(ac.destination); o.start(t0); o.stop(t0 + ms / 1000 + .02);
+    } catch (e) { }
+  }
+  const melody = () => [1568, 1760, 2093, 2637].forEach((f, i) => beep(f, 110, i * 120));
+  const lockTone = () => { beep(1400, 90); beep(1000, 140, 110) };
+
+  // ---------------- radio log ----------------
+  const logEl = document.getElementById('log');
+  function send(c, note) {
+    const now = new Date(); const ts = now.toTimeString().slice(0, 8) + '.' + String(now.getMilliseconds()).padStart(3, '0');
+    const e = logEl.querySelector('.empty'); if (e) e.remove();
+    const li = document.createElement('li');
+    li.innerHTML = `<span>${ts}</span><span class="c ${c}">${c === 'X' ? 'S' : c}</span><span></span>`;
+    li.lastChild.textContent = note; logEl.prepend(li);
+    while (logEl.children.length > 30) logEl.lastChild.remove();
+  }
+
+  // ---------------- flow ----------------
+  function setMode(m) { S.mode = m; S.hold = 0; S.idle = 0; S.menuIdle = 0 }
+  function startCal() { setMode('cal'); S.calStep = 0; S.calCount = 0; beep(2000, 60); beep(2000, 60, 120) }
+  function lock(reason) {
+    if (S.mode === 'active' && S.cmd !== 'S') { S.cmd = 'S' }
+    setMode('locked'); lockTone(); if (reason) flash(reason.t, reason.c);
+  }
+  function flash(t, c) { S.flash = { t, c }; S.flashUntil = S.t + 1300 }
+  function pulse(c) {
+    S.cmd = c; S.cmdUntil = S.t + 420; S.lastCmd = c; S.lastCmdT = S.t; S.idle = 0;
+    send(c, c === 'F' ? 'FORWARD 420 ms, then S' : 'REVERSE 420 ms, then S'); beep(c === 'F' ? 2600 : 1900, 60);
+  }
+  function gesture(kind) {
+    if (S.mode === 'boot' || !S.link || !S.skin) return;
+    if (S.t < S.refr) return; S.refr = S.t + 220;
+    if (kind === 'blink') S.blinkT = S.t; else S.clenchT = S.t;
+    if (S.mode === 'cal') {
+      const want = S.calStep === 0 ? 'blink' : S.calStep === 1 ? 'clench' : null;
+      if (kind === want) { S.calCount++; beep(2400, 45); if (S.calCount >= 5) { S.calStep++; S.calCount = 0; beep(2000, 60, 140); beep(2600, 80, 260) } }
+    } else if (S.mode === 'active') pulse(kind === 'clench' ? 'F' : 'R');
+  }
+  function press(k) {
+    const el = document.querySelector(`.btn[data-k="${k}"]`); el.classList.add('pressed'); setTimeout(() => el.classList.remove('pressed'), 120);
+    beep(3000, 18);
+    if (S.mode === 'boot') return;
+    if (k === 'stop') { send('X', 'STOP button: stop + lock'); S.cmd = 'S'; setMode('locked'); lockTone(); flash('STOPPED', P.red); return }
+    if (k === 'new') { startCal(); return }
+    if (S.mode === 'locked' || S.mode === 'active') {
+      if (k === 'ok') { if (S.mode === 'active') send('S', 'menu opened: control paused'); setMode('menu'); S.menuSel = 0 }
+      return;
+    }
+    if (S.mode === 'menu') {
+      if (k === 'left') S.menuSel = (S.menuSel + 1) % MENU.length;
+      if (k === 'ok') { const m = MENU[S.menuSel].k; if (m === 'exit') setMode('locked'); else { S.page = m; setMode('page') } }
+      S.menuIdle = 0; return;
+    }
+    if (S.mode === 'page') {
+      if (k === 'left') { setMode('menu') }
+      if (k === 'ok') { if (S.page === 'sens') { const i = SENS.indexOf(S.sens); S.sens = SENS[(i + 1) % SENS.length] } else setMode('menu') }
+      S.menuIdle = 0;
+    }
+  }
+
+  // ---------------- drawing helpers ----------------
+  const rr = (x, y, w, h, r, fill, stroke) => { g.beginPath(); g.roundRect(x, y, w, h, r); if (fill) { g.fillStyle = fill; g.fill() } if (stroke) { g.strokeStyle = stroke; g.lineWidth = 1; g.stroke() } };
+  const tx = (s, x, y, font, col, al = 'left', bl = 'alphabetic') => { g.font = font; g.fillStyle = col; g.textAlign = al; g.textBaseline = bl; g.fillText(s, x, y) };
+  function batt(x, y, pct, chg, label) {
+    const col = pct < 15 ? P.red : pct < 30 ? P.amber : P.fg;
+    tx(label, x - 2, y + 7, F(700, 9, 'r'), P.mut, 'right');
+    rr(x, y, 18, 9, 2, null, col); g.fillStyle = col; g.fillRect(x + 18, y + 3, 2, 3);
+    g.fillRect(x + 2, y + 2, Math.max(1, 14 * pct / 100), 5);
+    if (chg) { g.fillStyle = P.amber; g.beginPath(); g.moveTo(x + 10, y - 1); g.lineTo(x + 6, y + 5); g.lineTo(x + 9, y + 5); g.lineTo(x + 8, y + 10); g.lineTo(x + 12, y + 3.5); g.lineTo(x + 9, y + 3.5); g.closePath(); g.fill() }
+  }
+  function lockIcon(x, y, s, col, open) {
+    g.strokeStyle = col; g.lineWidth = s * .14; g.beginPath();
+    if (open) g.arc(x + s * .65, y + s * .05, s * .28, Math.PI, Math.PI * 1.95); else g.arc(x + s * .5, y + s * .05, s * .28, Math.PI, 0);
+    g.stroke(); rr(x + s * .12, y + s * .05, s * .76, s * .6, s * .1, col);
+    g.fillStyle = P.bg; g.fillRect(x + s * .46, y + s * .22, s * .08, s * .22);
+  }
+  function statusBar() {
+    g.fillStyle = P.panel; g.fillRect(0, 0, W, 20);
+    tx('NEUROX', 6, 14, F(900, 10, 'o'), P.blue);
+    // HALO link bars
+    const q = !S.link ? 0 : S.rssi > -60 ? 3 : S.rssi > -72 ? 2 : 1;
+    tx('HALO', 70, 14, F(700, 10, 'r'), S.link ? P.fg : P.red);
+    for (let i = 0; i < 3; i++) { g.fillStyle = i < q ? P.teal : P.line; g.fillRect(102 + i * 4, 12 - i * 3, 3, 3 + i * 3) }
+    tx('CHAIR', 124, 14, F(700, 10, 'r'), P.fg); g.fillStyle = S.link ? P.green : P.amber; g.beginPath(); g.arc(160, 10, 3, 0, 7); g.fill();
+    batt(198, 6, S.hbat, false, 'H'); batt(252, 6, S.bbat, S.usb, 'BOX');
+    const locked = S.mode !== 'active';
+    lockIcon(298, 4, 13, locked ? P.amber : P.green, !locked);
+  }
+  function softKeys(labels) {
+    g.fillStyle = P.panel; g.fillRect(0, 222, W, 18);
+    labels.forEach((l, i) => { if (!l) return; const al = i === 2 ? 'right' : 'center'; const x = i === 2 ? W - 6 : SOFT_X[i];
+      tx(l, x, 235, F(700, 11, 'r'), i === 1 ? P.fg : P.blue, al);
+      g.fillStyle = P.line; const w = g.measureText(l).width; const cx = i === 2 ? W - 6 - w / 2 : x; g.fillRect(cx - 3, 238, 6, 2) });
+  }
+  function trace(buf, x, y, w, h, col, scale, label) {
+    rr(x, y, w, h, 4, P.panel);
+    g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
+    g.strokeStyle = P.line; g.lineWidth = .5; g.beginPath(); g.moveTo(x, y + h / 2); g.lineTo(x + w, y + h / 2); g.stroke();
+    g.strokeStyle = col; g.lineWidth = 1.2; g.beginPath();
+    const n = Math.floor(w); for (let i = 0; i < n; i++) { const k = (head - n * 2 + i * 2 + N * 4) % N; const v = buf[k]; const yy = y + h / 2 - v * scale; i ? g.lineTo(x + i, yy) : g.moveTo(x + i, yy) }
+    g.stroke(); g.restore();
+    tx(label, x + 5, y + 11, F(700, 9, 'r'), P.mut);
+  }
+  function emgBar(x, y, w, h) {
+    const thr = 520 / S.sens; const v = Math.min(1, emgEnv / 1000);
+    rr(x, y, w, h, 3, P.panel);
+    rr(x + 1, y + 1, Math.max(0, (w - 2) * v), h - 2, 2, emgEnv > thr ? P.green : P.teal);
+    const tx_ = x + (w - 2) * Math.min(1, thr / 1000); g.fillStyle = P.amber; g.fillRect(tx_, y - 2, 1.5, h + 4);
+    tx('EMG', x - 4, y + h - 2, F(700, 9, 'r'), P.mut, 'right');
+  }
+  function ring(cx, cy, r, frac, col, wid = 5) {
+    g.lineWidth = wid; g.strokeStyle = P.line; g.beginPath(); g.arc(cx, cy, r, 0, 7); g.stroke();
+    g.strokeStyle = col; g.beginPath(); g.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + frac * Math.PI * 2); g.stroke();
+  }
+
+  // ---------------- screens ----------------
+  function drawBoot() {
+    const p = Math.min(1, S.bootT / 2400);
+    g.strokeStyle = P.blue; g.lineWidth = 3; g.beginPath(); g.arc(160, 96, 30, -Math.PI / 2 - .9, -Math.PI / 2 - .9 + p * Math.PI * 1.75); g.stroke();
+    g.lineWidth = 4.5; g.lineJoin = 'round'; g.lineCap = 'round'; g.beginPath(); g.moveTo(147, 110); g.lineTo(147, 82); g.lineTo(173, 110); g.lineTo(173, 82); g.stroke();
+    g.fillStyle = P.red; g.beginPath(); g.arc(183, 74, 2.6, 0, 7); g.fill();
+    tx('NEUROX', 160, 152, F(900, 20, 'o'), P.fg, 'center');
+    tx(S.bootT < 1300 ? 'looking for the HALO ...' : S.link ? 'HALO linked  ·  chair linked' : 'HALO not found', 160, 176, F(600, 13, 'r'), S.bootT < 1300 ? P.mut : S.link ? P.teal : P.red, 'center');
+    tx('box v3.1  ·  ESP32-S3', 160, 208, F(500, 9, 'm'), P.mut, 'center');
+  }
+  function drawCal() {
+    statusBar();
+    const steps = [['BLINK', '5 times, firmly'], ['CLENCH YOUR JAW', '5 times, then relax'], ['CLOSE YOUR EYES', 'firmly, hold 3 s']];
+    tx(`CALIBRATING  ${S.calStep + 1} / 3`, 12, 38, F(700, 12, 'r'), P.amber);
+    for (let i = 0; i < 3; i++) rr(196 + i * 40, 30, 36, 5, 2, i < S.calStep ? P.green : i === S.calStep ? P.amber : P.line);
+    tx(steps[S.calStep][0], 160, 76, F(900, S.calStep === 0 ? 26 : 17, 'o'), P.fg, 'center');
+    tx(steps[S.calStep][1], 160, 96, F(600, 14, 'r'), P.mut, 'center');
+    if (S.calStep < 2) {
+      for (let i = 0; i < 5; i++) { g.fillStyle = i < S.calCount ? P.green : P.line; g.beginPath(); g.arc(112 + i * 24, 118, 7, 0, 7); g.fill() }
+    } else {
+      ring(160, 122, 15, Math.min(1, S.hold / 3000), P.green, 4);
+      tx((S.hold / 1000).toFixed(1) + ' s', 160, 126, F(700, 10, 'm'), P.fg, 'center');
+    }
+    trace(S.calStep === 1 ? Hs : V, 12, 146, 296, 70, S.calStep === 1 ? P.violet : P.teal, S.calStep === 1 ? .045 : .05,
+          S.calStep === 1 ? 'TEMPLES  GPIO 4 on the HALO' : 'FOREHEAD  GPIO 1 on the HALO');
+    softKeys(['', 'restart', '']);
+  }
+  function drawLocked() {
+    statusBar();
+    lockIcon(140, 44, 40, P.amber, false);
+    tx('LOCKED', 160, 120, F(900, 22, 'o'), P.amber, 'center');
+    if (!S.calibrated) tx('not calibrated  ·  press NEW', 160, 142, F(600, 14, 'r'), P.mut, 'center');
+    else tx('close your eyes firmly for 3 s to unlock', 160, 142, F(600, 14, 'r'), P.mut, 'center');
+    if (S.calibrated) {
+      rr(60, 156, 200, 10, 5, P.panel); rr(60, 156, 200 * Math.min(1, S.hold / 3000), 10, 5, P.green);
+      tx(S.eyes ? `${(S.hold / 1000).toFixed(1)} s` : 'eyes open', 160, 186, F(700, 11, 'm'), S.eyes ? P.green : P.mut, 'center');
+    }
+    tx('chair stopped', 160, 210, F(600, 11, 'r'), P.mut, 'center');
+    softKeys(['', 'recalibrate', 'menu']);
+  }
+  function drawActive() {
+    statusBar();
+    const live = S.t < S.cmdUntil; const c = live ? S.cmd : 'S';
+    const col = c === 'F' ? P.green : c === 'R' ? P.blue : P.panel2;
+    rr(10, 28, 190, 98, 8, col);
+    tx(c === 'F' ? 'FORWARD' : c === 'R' ? 'REVERSE' : 'READY', 105, 78, F(900, c === 'S' ? 22 : 24, 'o'), c === 'S' ? P.fg : '#fff', 'center');
+    if (c === 'F') { g.fillStyle = '#fff'; g.beginPath(); g.moveTo(105, 92); g.lineTo(93, 110); g.lineTo(117, 110); g.fill() }
+    else if (c === 'R') { g.fillStyle = '#fff'; g.beginPath(); g.moveTo(105, 110); g.lineTo(93, 92); g.lineTo(117, 92); g.fill() }
+    else { tx('clench = forward', 105, 100, F(600, 12, 'r'), P.mut, 'center'); tx('blink = reverse', 105, 114, F(600, 12, 'r'), P.mut, 'center') }
+    // side tiles
+    rr(208, 28, 102, 46, 8, P.panel);
+    tx('LAST', 216, 42, F(700, 9, 'r'), P.mut);
+    tx(S.lastCmd ? (S.lastCmd === 'F' ? 'FORWARD' : 'REVERSE') : '-', 216, 62, F(700, 15, 'r'), P.fg);
+    tx(S.lastCmd ? `${((S.t - S.lastCmdT) / 1000).toFixed(1)} s ago` : '', 302, 42, F(500, 9, 'm'), P.mut, 'right');
+    rr(208, 80, 102, 46, 8, P.panel);
+    tx('AUTO-LOCK', 216, 94, F(700, 9, 'r'), P.mut);
+    const left = Math.max(0, S.AUTOLOCK - S.idle);
+    ring(287, 103, 12, left / S.AUTOLOCK, P.amber, 3);
+    tx((left / 1000).toFixed(1), 216, 116, F(700, 15, 'm'), P.fg);
+    trace(V, 10, 134, 300, 40, P.teal, .03, 'FOREHEAD');
+    trace(Hs, 10, 178, 230, 38, P.violet, .025, 'TEMPLES');
+    emgBar(270, 199, 40, 10);
+    softKeys(['', 'recalibrate', 'menu']);
+  }
+  function drawMenu() {
+    statusBar();
+    tx('MENU', 12, 40, F(900, 13, 'o'), P.fg); tx('control paused', 308, 40, F(600, 12, 'r'), P.amber, 'right');
+    MENU.forEach((m, i) => {
+      const y = 50 + i * 33, on = i === S.menuSel;
+      rr(10, y, 300, 29, 6, on ? P.blue : P.panel);
+      tx(m.n, 22, y + 19, F(700, 15, 'r'), on ? '#fff' : P.fg); tx(m.d, 298, y + 19, F(600, 12, 'r'), on ? '#dbe6ff' : P.mut, 'right');
+    });
+    softKeys(['next', 'recalibrate', 'open']);
+  }
+  function drawPage() {
+    statusBar();
+    const title = MENU.find(m => m.k === S.page).n.toUpperCase();
+    tx(title, 12, 40, F(900, 13, 'o'), P.fg);
+    if (S.page === 'signals') {
+      tx('256 Hz  ·  12-bit', 308, 40, F(500, 9, 'm'), P.mut, 'right');
+      trace(V, 10, 50, 300, 70, P.teal, .045, 'PILL 2  FOREHEAD / NOSE  (vertical)');
+      trace(Hs, 10, 126, 300, 62, P.violet, .04, 'PILL 1  TEMPLES  (horizontal)');
+      emgBar(44, 198, 266, 12);
+      softKeys(['back', 'recalibrate', 'back']);
+    } else if (S.page === 'sens') {
+      tx('how hard a clench must be to count', 160, 66, F(600, 13, 'r'), P.mut, 'center');
+      tx('×' + S.sens.toFixed(2), 160, 118, F(900, 40, 'o'), P.fg, 'center');
+      SENS.forEach((s, i) => rr(70 + i * 31, 138, 26, 8, 3, s <= S.sens ? P.blue : P.line));
+      tx('lower = needs a harder clench', 70, 166, F(600, 11, 'r'), P.mut); tx('higher = more sensitive', 250, 166, F(600, 11, 'r'), P.mut, 'right');
+      emgBar(44, 186, 266, 12);
+      softKeys(['back', 'recalibrate', 'change']);
+    } else if (S.page === 'radio') {
+      const rows = [['HALO  (ESP32-C3)', S.link ? `${S.rssi} dBm` : 'lost', S.link ? P.teal : P.red],
+                    ['  packets', S.link ? `${(8 + Math.random() * .2).toFixed(1)}/s  ·  ${S.pktLoss.toFixed(1)}% lost` : '-', P.fg],
+                    ['WHEELCHAIR  (ESP32-S3)', S.link ? 'linked' : 'stop sent', S.link ? P.green : P.amber],
+                    ['  last command', S.lastCmd ? S.lastCmd : 'S', P.fg],
+                    ['channel', 'ESP-NOW  ch 1', P.fg]];
+      rows.forEach(([a, b, c], i) => { rr(10, 50 + i * 32, 300, 28, 6, P.panel); tx(a, 20, 69 + i * 32, F(700, 13, 'r'), P.mut); tx(b, 300, 69 + i * 32, F(700, 13, 'm'), c, 'right') });
+      softKeys(['back', 'recalibrate', 'back']);
+    } else if (S.page === 'power') {
+      const rows = [['BOX battery', `${S.bbat}%  ${S.usb ? 'charging' : ''}`], ['HALO battery', `${S.hbat}%`], ['USB', S.usb ? 'in CHARGE slot' : 'not plugged']];
+      rows.forEach(([a, b], i) => { rr(10, 50 + i * 32, 186, 28, 6, P.panel); tx(a, 20, 69 + i * 32, F(700, 13, 'r'), P.mut); tx(b, 188, 69 + i * 32, F(700, 12, 'm'), P.fg, 'right') });
+      // bubble level from the MPU-6050
+      rr(204, 50, 106, 156, 6, P.panel); tx('TILT  MPU-6050', 257, 64, F(700, 9, 'r'), P.mut, 'center');
+      g.strokeStyle = P.line; g.lineWidth = 1; g.beginPath(); g.arc(257, 120, 38, 0, 7); g.stroke(); g.beginPath(); g.arc(257, 120, 12, 0, 7); g.stroke();
+      const bx = 257 + Math.max(-30, Math.min(30, S.tilt)) * 1.1; g.fillStyle = Math.abs(S.tilt) > 15 ? P.amber : P.green; g.beginPath(); g.arc(bx, 120, 8, 0, 7); g.fill();
+      tx(`${S.tilt > 0 ? '+' : ''}${S.tilt}°`, 257, 184, F(700, 16, 'm'), P.fg, 'center');
+      tx('GPIO 41 / 42', 257, 199, F(500, 8, 'm'), P.mut, 'center');
+      softKeys(['back', 'recalibrate', 'back']);
+    }
+  }
+  function overlay(text, sub, col) {
+    g.fillStyle = 'rgba(8,10,14,.82)'; g.fillRect(0, 20, W, 202);
+    rr(26, 70, 268, 96, 10, P.panel2, col);
+    tx(text, 160, 108, F(900, 17, 'o'), col, 'center');
+    tx(sub, 160, 136, F(600, 13, 'r'), P.fg, 'center');
+  }
+  function draw() {
+    g.fillStyle = P.bg; g.fillRect(0, 0, W, H);
+    if (S.mode === 'boot') drawBoot();
+    else if (S.mode === 'cal') drawCal();
+    else if (S.mode === 'locked') drawLocked();
+    else if (S.mode === 'active') drawActive();
+    else if (S.mode === 'menu') drawMenu();
+    else if (S.mode === 'page') drawPage();
+    if (S.mode !== 'boot') {
+      if (!S.link) overlay('HALO LINK LOST', 'chair stopped  ·  check the HALO switch', P.red);
+      else if (!S.skin) overlay('CLIPPED', 'electrode off  ·  re-gel the pads', P.amber);
+      else if (S.flash && S.t < S.flashUntil) overlay(S.flash.t, S.flash.t === 'STOPPED' ? 'locked  ·  chair stopped' : 'close your eyes 3 s to unlock', S.flash.c);
+    }
+  }
+
+  // ---------------- auto wearer ----------------
+  function autoStep(dt) {
+    if (!S.auto) return; S.autoT -= dt; const m = S.mode;
+    const needEyes = (m === 'cal' && S.calStep === 2) || (m === 'locked' && S.calibrated);
+    if (needEyes) { if (!S.eyes && S.autoT <= 0) { setEyes(true); S.autoT = 3300 } else if (S.eyes && S.autoT <= 0) { setEyes(false); S.autoT = 900 } return }
+    if (S.eyes) setEyes(false);
+    if (S.autoT > 0) return;
+    if (m === 'cal') { gesture(S.calStep === 0 ? 'blink' : 'clench'); S.autoT = 750 }
+    else if (m === 'active') { gesture(Math.random() < .6 ? 'clench' : 'blink'); S.autoT = 1400 + Math.random() * 900 }
+    else if (m === 'locked' && !S.calibrated) { press('new'); S.autoT = 600 }
+  }
+
+  // ---------------- main loop ----------------
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min(64, now - last); last = now; S.t += dt;
+    acc += dt * 0.256; while (acc >= 1) { sample(); acc -= 1 }
+    S.rssi = Math.round(-54 + Math.sin(S.t / 3000) * 4);
+    if (S.mode === 'boot') { S.bootT += dt; if (S.bootT > 2600) { startCal() } }
+    if (S.eyes && S.link && S.skin) S.hold += dt; else S.hold = 0;
+    if (S.mode === 'cal' && S.calStep === 2 && S.hold >= 3000) { S.calibrated = true; melody(); setMode('locked'); flash('CALIBRATED', P.green); S.flashUntil = S.t + 1600 }
+    else if (S.mode === 'locked' && S.calibrated && S.hold >= 3000) { setMode('active'); melody(); send('S', 'unlocked: ready, chair holds S') }
+    else if (S.mode === 'active') {
+      if (!S.link || !S.skin) { send('S', !S.link ? 'HALO link lost: stop + lock' : 'electrode clipped: stop + lock'); lock() }
+      else { if (S.t >= S.cmdUntil) S.idle += dt; if (S.idle >= S.AUTOLOCK) lock({ t: 'AUTO-LOCKED', c: P.amber }) }
+    } else if (S.mode === 'menu' || S.mode === 'page') { S.menuIdle += dt; if (S.menuIdle > 20000) setMode('locked') }
+    autoStep(dt);
+    draw(); updateHint();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------------- controls ----------------
+  const hintEl = document.getElementById('hint');
+  function updateHint() {
+    const m = S.mode; let h = '';
+    if (!S.link) h = 'link off'; else if (!S.skin) h = 'electrode off';
+    else if (m === 'boot') h = 'starting';
+    else if (m === 'cal') h = ['blink 5×', 'clench 5×', 'hold eyes 3 s'][S.calStep];
+    else if (m === 'locked') h = S.calibrated ? 'hold eyes 3 s' : 'press NEW';
+    else if (m === 'active') h = 'clench or blink';
+    else h = 'paused';
+    if (hintEl.textContent !== h) hintEl.textContent = h;
+  }
+  const eyesBtn = document.getElementById('g-eyes');
+  function setEyes(on) { S.eyes = on; eyesBtn.classList.toggle('on', on) }
+  document.querySelectorAll('.btn').forEach(b => b.addEventListener('click', () => press(b.dataset.k)));
+  const tapFx = (el) => { el.classList.add('on'); setTimeout(() => el.classList.remove('on'), 160) };
+  const gb = document.getElementById('g-blink'), gc = document.getElementById('g-clench');
+  gb.addEventListener('click', () => { gesture('blink'); tapFx(gb) });
+  gc.addEventListener('click', () => { gesture('clench'); tapFx(gc) });
+  eyesBtn.addEventListener('pointerdown', e => { e.preventDefault(); eyesBtn.setPointerCapture?.(e.pointerId); setEyes(true) });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => eyesBtn.addEventListener(ev, () => setEyes(false)));
+  eyesBtn.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setEyes(true) } });
+  eyesBtn.addEventListener('keyup', e => { if (e.key === ' ' || e.key === 'Enter') setEyes(false) });
+  const autoBtn = document.getElementById('auto');
+  autoBtn.addEventListener('click', () => { S.auto = !S.auto; autoBtn.classList.toggle('on', S.auto); autoBtn.setAttribute('aria-pressed', S.auto); if (!S.auto) setEyes(false); S.autoT = 300 });
+  const bind = (id, fn) => document.getElementById(id).addEventListener('input', e => fn(e.target));
+  bind('c-link', el => { S.link = el.checked; if (!S.link) send('S', 'HALO link lost: chair told to stop') });
+  bind('c-skin', el => { S.skin = el.checked });
+  bind('c-usb', el => { S.usb = el.checked });
+  bind('c-hbat', el => { S.hbat = +el.value; document.getElementById('v-hbat').textContent = el.value + '%' });
+  bind('c-tilt', el => { S.tilt = +el.value; document.getElementById('v-tilt').textContent = el.value + '°' });
+  bind('c-snd', el => { S.sound = el.checked });
+  // tap the screen (touch panel): tap a menu row to open it, tap elsewhere = OK
+  cv.addEventListener('click', e => {
+    const r = cv.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width * W, y = (e.clientY - r.top) / r.height * H;
+    if (S.mode === 'menu') { const i = Math.floor((y - 50) / 33); if (i >= 0 && i < MENU.length && x > 10 && x < 310) { S.menuSel = i; press('ok') } return }
+    if (y > 222) { const i = SOFT_X.map(sx => Math.abs(sx - x)); press(['left', 'new', 'ok'][i.indexOf(Math.min(...i))]) }
+  });
+  addEventListener('keydown', e => {
+    if (e.target.matches('input')) return; if (e.repeat && e.key.toLowerCase() !== 'e') return;
+    const k = e.key;
+    if (k === 'ArrowLeft') press('left'); else if (k === 'n' || k === 'N') press('new');
+    else if (k === 'Enter' || k === 'ArrowRight') { if (!e.target.matches('button')) press('ok'); else return }
+    else if (k === ' ') { if (e.target.matches('button')) return; press('stop') }
+    else if (k === 'b' || k === 'B') gesture('blink'); else if (k === 'j' || k === 'J') gesture('clench');
+    else if (k === 'e' || k === 'E') setEyes(true); else return;
+    e.preventDefault();
+  });
+  addEventListener('keyup', e => { if (e.key === 'e' || e.key === 'E') setEyes(false) });
+  if (!g.roundRect) g.roundRect = function (x, y, w, h, r) { this.rect(x, y, w, h) };
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(loop));
+})();
+</script>
