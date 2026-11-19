@@ -11,6 +11,8 @@ import os, sys, trimesh
 import cadquery as cq
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
 import box_buttons_cq as BB
+BB.CAP_TOP = float(os.environ.get('CAP_TOP', BB.CAP_TOP))   # how far the gray caps stand above the lid
+SUF = os.environ.get('CAP_SUFFIX', '')
 import make_3mf_v3 as M
 
 import json; HEIGHTS = json.loads(os.environ.get("CAP_HEIGHTS", "[4.6, 5.0, 5.4, 5.8, 6.2]"))
@@ -25,18 +27,18 @@ def item(name, mesh, col): return (name, [(col, mesh)])
 def row(items, pitch, x0, y): return [M.place(it, x0 + i * pitch, y) for i, it in enumerate(items)]
 
 # ---- sizer ----
-siz = [item(f"sizer_{i+1}dot_{h}mm", stl(BB.cap(sw_h=h, dots=i + 1), f"cap_sizer_{i+1}dot_{h}mm"), "MG") for i, h in enumerate(HEIGHTS)]
-p = os.path.join(OUT, "NeuroX_Box_v3.1_cap_SIZER" + os.environ.get("CAP_TAG", "") + ".3mf")
+siz = [item(f"sizer_{i+1}dot_{h}mm", stl(BB.cap(sw_h=h, dots=i + 1), f"cap_sizer_{i+1}dot_{h}mm{SUF}"), "MG") for i, h in enumerate(HEIGHTS)]
+p = os.path.join(OUT, "NeuroX_Box_v3.1_cap_SIZER" + os.environ.get("CAP_TAG", "") + SUF + ".3mf")
 M.write_3mf(p, row(siz, 22, 46, 90), "NeuroX box v3.1 - cap sizer: " + " / ".join(f"{i+1} dot {h} mm" for i, h in enumerate(HEIGHTS)))
 print(os.path.basename(p))
 
 # ---- one reprint plate per height ----
 for h in HEIGHTS:
-    cap = stl(BB.cap(sw_h=h), f"cap_for_{h}mm_switch")
-    sc = stl(BB.cap(True, sw_h=h), f"stop_cap_for_{h}mm_switch")
+    cap = stl(BB.cap(sw_h=h), f"cap_for_{h}mm_switch{SUF}")
+    sc = stl(BB.cap(True, sw_h=h), f"stop_cap_for_{h}mm_switch{SUF}")
     objs = row([item(f"button_cap_{i+1} ({h} mm switch)", cap, "MG") for i in range(3)] +
                [item(f"STOP_cap ({h} mm switch)", sc, "RD")], 24, 54, 90)
-    p = os.path.join(OUT, f"NeuroX_Box_v3.1_caps_for_{h}mm_switch.3mf")
+    p = os.path.join(OUT, f"NeuroX_Box_v3.1_caps_for_{h}mm_switch{SUF}.3mf")
     M.write_3mf(p, objs, f"NeuroX box v3.1 - 3 caps + STOP cap for a {h} mm switch (body bottom to button top)")
     print(os.path.basename(p))
 
