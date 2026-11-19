@@ -50,16 +50,13 @@ L([(666, PR - 4), (744, PR - 38)], C["bat"]); d.ellipse([742, PR - 8, 758, PR + 
 lab(700, PR - 52, "ROCKER", a="mb", s=24)
 L([(758, PR), (860, PR)], C["bat"]); dot(810, PR, C["bat"])
 L([(810, PR), (810, PR - 70)], C["bat"], 5); tag(810 - 20, PR - 92, "VBAT", "r", 24)
-# MT3608
-block(860, PR - 110, 1130, PR + 150, "MT3608", "set to 5.1 V FIRST")
-lab(872, PR, "IN+"); lab(872, PR + 90, "IN-"); lab(1118, PR, "OUT+", a="rm"); lab(1118, PR + 90, "OUT-", a="rm")
-L([(860, PR + 90), (830, PR + 90), (830, PR + 160)], C["gnd"], 5); tag(830 - 20, PR + 182, "GND", "r", 24)
-# 100 uF across the output
-L([(1130, PR), (1290, PR)], C["v5"]); dot(1190, PR, C["v5"])
-L([(1130, PR + 90), (1190, PR + 90)], C["gnd"]); L([(1190, PR), (1190, PR + 30)], C["v5"], 5)
-capv(1190, PR + 45, "", C["v5"]); L([(1190, PR + 57), (1190, PR + 90)], C["gnd"], 5); dot(1190, PR + 90, C["gnd"])
-L([(1190, PR + 90), (1190, PR + 130)], C["gnd"], 5); tag(1190 - 20, PR + 152, "GND", "r", 24)
-lab(1222, PR + 45, "100 uF", s=24); lab(1222, PR + 70, "+ to OUT+", MUT, s=20)
+# no boost: rocker -> D1 -> 5V pin (the S3's own regulator makes 3.3 V)
+L([(860, PR), (1290, PR)], C["bat"]); dot(1190, PR, C["bat"])
+lab(1000, PR - 30, "no boost converter", MUT, "mb", 22)
+L([(1190, PR), (1190, PR + 30)], C["bat"], 5)
+capv(1190, PR + 45, "", C["bat"]); L([(1190, PR + 57), (1190, PR + 130)], C["gnd"], 5)
+tag(1190 - 20, PR + 152, "GND", "r", 24)
+lab(1222, PR + 45, "100 uF", s=24); lab(1222, PR + 70, "+ to VBAT", MUT, s=20)
 # D1
 d.polygon([(1290, PR - 22), (1290, PR + 22), (1334, PR)], fill=C["v5"]); L([(1336, PR - 22), (1336, PR + 22)], C["v5"], 7)
 lab(1312, PR - 34, "D1 1N5819  (band -> ESP)", C["v5"], "mb", 24)
@@ -124,10 +121,10 @@ lab(SWX - 220, PY(4) - 44, "BUTTONS  (12 x 12 switch, 2 DIAGONAL pins)", C["btn"
 
 # ---- screen (J1 9..12, 15..18, 20) + buzzer (J1 19) ----
 SX0, SX1 = 420, 860
-srow = {8: "T_IRQ  (14)", 9: "T_CS  (11)", 10: "RESET  (4)", 11: "DC  (5)", 14: "CS  (3)", 15: "SDO (9) + T_DO (13)",
+srow = {8: "T_IRQ  (14)", 9: "T_CS  (11)", 10: "RESET  (4)", 11: "DC  (5)", 14: "CS  (3)", 15: "T_DO (13)   SDO open",
         16: "SDI (6) + T_DIN (12)", 17: "SCK (7) + T_CLK (10)", 19: "LED  (8)"}
 d.rounded_rectangle([SX0, PY(8) - 36, SX1, PY(19) + 120], 16, fill=(255, 244, 232), outline=C["scr"], width=3)
-d.text(((SX0 + SX1) / 2, PY(19) + 50), "SCREEN  2.8\" ILI9341", font=RAJ(32), fill=INK, anchor="mt")
+d.text(((SX0 + SX1) / 2, PY(19) + 50), "SCREEN  2.8\" ST7789", font=RAJ(32), fill=INK, anchor="mt")
 d.text(((SX0 + SX1) / 2, PY(19) + 86), "14-pin header, SPI + touch", font=RAJ(24), fill=MUT, anchor="mt")
 for i, t in srow.items():
     y = PY(i); L([(SX1, y), (DK0 - 12, y)], C["scr"])
@@ -138,7 +135,7 @@ for y, pn, net in ((PY(8) - 150 + 98, "VCC (1)", "3V3"), (PY(8) - 150 + 98 + 0, 
 for k, (pn, net) in enumerate((("VCC (1)", "3V3"), ("GND (2)", "GND"))):
     y = PY(12) + k * 50
     d.text((SX0 + 14, y), pn, font=RAJ(25), fill=INK, anchor="lm"); L([(SX0, y), (SX0 - 50, y)], NETCOL[net]); tag(SX0 - 50, y, net, "l")
-d.multiline_text((SX0 + 14, PY(14) - 14), "join SDO+T_DO,\nSDI+T_DIN and\nSCK+T_CLK\nat the header", font=RAJ(22), fill=MUT, anchor="la")
+d.multiline_text((SX0 + 14, PY(14) - 14), "join SDI+T_DIN\nand SCK+T_CLK\nat the header;\nleave SDO open", font=RAJ(22), fill=MUT, anchor="la")
 # buzzer on row 19 (between SCK and LED, no screen pin there)
 yb = PY(18)
 L([(DK0 - 12, yb), (1080, yb)], C["bz"]); d.ellipse([1000, yb - 24, 1060, yb + 24], fill=(40, 40, 44)); d.text((1030, yb), "BZ", font=RAJ(22), fill="white", anchor="mm")
@@ -166,10 +163,10 @@ lab(R0 + 70, PY(10), "GPIO 1 + 4: free now", MUT, "lm", 24); lab(R0 + 70, PY(11)
 ny = dy1 + 110
 notes = [("Screen VCC on 3.3 V:", " safe whether or not the J1 jumper on the screen board is bridged."),
          ("LED (8) on GPIO 14:", " fine if your screen has a small 3-leg transistor by the LED pin. No transistor? LED to 3V3 instead."),
-         ("Before plugging the ESP32 in:", " 5.1 V at the boost OUT, ~4.8 V after D1, 3V3 to GND not shorted, VBAT/2 about half the battery."),
+         ("Before plugging the ESP32 in:", " ~3.9 V after D1 on a full cell, 3V3 to GND not shorted, VBAT/2 about half the battery."),
          ("USB into the ESP32:", " rocker OFF first. The box has no wire to the person, so charging while the HALO is worn is fine.")]
 for i, (a, b) in enumerate(notes):
     d.text((64, ny + i * 48), a, font=RAJ(31), fill=C["v5"] if i in (2, 3) else INK)
     d.text((64 + d.textlength(a, font=RAJ(31)), ny + i * 48), b, font=RAJ(31), fill=(80, 86, 98))
 sh = sh.crop((0, 0, W, ny + len(notes) * 48 + 40))
-sh.save(f"{SP}/wiring/NeuroX_Box_S3_board_wiring.png"); print(sh.size)
+sh.save("NeuroX_Box_S3_board_wiring.png"); print(sh.size)

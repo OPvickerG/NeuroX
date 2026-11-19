@@ -150,12 +150,12 @@ d.text((lx2, px(0, 11.3 * P)[1]), "C1 100nF: node -> GND", font=RAJ(26), fill=IN
 # ---- legend ----
 ly = OY + BH * S + 90
 lx = 70
-for k, t in (("v5", "5V (boost, after D1)"), ("v33", "3.3 V"), ("gnd", "GND"), ("scr", "screen"), ("btn", "buttons"),
+for k, t in (("v5", "5V (battery, after D1)"), ("v33", "3.3 V"), ("gnd", "GND"), ("scr", "screen"), ("btn", "buttons"),
              ("mpu", "MPU-6050"), ("bz", "buzzer"), ("sense", "battery / USB sense")):
     d.ellipse([lx, ly - 13, lx + 26, ly + 13], fill=C[k]); d.text((lx + 36, ly), t, font=RAJ(32), fill=INK, anchor="lm")
     lx += 70 + int(d.textlength(t, font=RAJ(32)))
-notes = ["Off-board wires into the 5V / GND / VBAT / VUSB pins:  5V = boost OUT+,  GND = boost OUT-,  VBAT = boost IN+ (after the rocker),  VUSB = TP4056 IN+ (USB 5V).",
+notes = ["Off-board wires into the 5V / GND / VBAT / VUSB pins (no boost):  5V and VBAT = rocker output (link the two pins),  GND = TP4056 OUT-,  VUSB = TP4056 IN+ (USB 5V).",
          "Lines that cross WITHOUT a dot are not connected. Grey pins are not used. GPIO 1 and 4 are free now - the pills moved to the HALO.  Do not use 0, 3, 45, 46 (boot pins), 19 / 20 (USB), 35-37 (PSRAM)."]
 for i, n in enumerate(notes): d.text((70, ly + 52 + i * 44), n, font=RAJ(30), fill=(80, 86, 98))
 sh = sh.crop((0, 0, W, ly + 52 + len(notes) * 44 + 40))
-sh.save(f"{SP}/wiring/NeuroX_Box_main_board_wiring.png"); print(sh.size)
+sh.save("NeuroX_Box_main_board_wiring.png"); print(sh.size)
