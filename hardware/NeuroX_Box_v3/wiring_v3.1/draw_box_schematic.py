@@ -50,13 +50,16 @@ L([(666, PR - 4), (744, PR - 38)], C["bat"]); d.ellipse([742, PR - 8, 758, PR + 
 lab(700, PR - 52, "ROCKER", a="mb", s=24)
 L([(758, PR), (860, PR)], C["bat"]); dot(810, PR, C["bat"])
 L([(810, PR), (810, PR - 70)], C["bat"], 5); tag(810 - 20, PR - 92, "VBAT", "r", 24)
-# no boost: rocker -> D1 -> 5V pin (the S3's own regulator makes 3.3 V)
-L([(860, PR), (1290, PR)], C["bat"]); dot(1190, PR, C["bat"])
-lab(1000, PR - 30, "no boost converter", MUT, "mb", 22)
-L([(1190, PR), (1190, PR + 30)], C["bat"], 5)
-capv(1190, PR + 45, "", C["bat"]); L([(1190, PR + 57), (1190, PR + 130)], C["gnd"], 5)
-tag(1190 - 20, PR + 152, "GND", "r", 24)
-lab(1222, PR + 45, "100 uF", s=24); lab(1222, PR + 70, "+ to VBAT", MUT, s=20)
+# MT3608
+block(860, PR - 110, 1130, PR + 150, "MT3608", "set to 5.1 V FIRST")
+lab(872, PR, "IN+"); lab(872, PR + 90, "IN-"); lab(1118, PR, "OUT+", a="rm"); lab(1118, PR + 90, "OUT-", a="rm")
+L([(860, PR + 90), (830, PR + 90), (830, PR + 160)], C["gnd"], 5); tag(830 - 20, PR + 182, "GND", "r", 24)
+# 100 uF across the output
+L([(1130, PR), (1290, PR)], C["v5"]); dot(1190, PR, C["v5"])
+L([(1130, PR + 90), (1190, PR + 90)], C["gnd"]); L([(1190, PR), (1190, PR + 30)], C["v5"], 5)
+capv(1190, PR + 45, "", C["v5"]); L([(1190, PR + 57), (1190, PR + 90)], C["gnd"], 5); dot(1190, PR + 90, C["gnd"])
+L([(1190, PR + 90), (1190, PR + 130)], C["gnd"], 5); tag(1190 - 20, PR + 152, "GND", "r", 24)
+lab(1222, PR + 45, "100 uF", s=24); lab(1222, PR + 70, "+ to OUT+", MUT, s=20)
 # D1
 d.polygon([(1290, PR - 22), (1290, PR + 22), (1334, PR)], fill=C["v5"]); L([(1336, PR - 22), (1336, PR + 22)], C["v5"], 7)
 lab(1312, PR - 34, "D1 1N5819  (band -> ESP)", C["v5"], "mb", 24)
@@ -163,7 +166,7 @@ lab(R0 + 70, PY(10), "GPIO 1 + 4: free now", MUT, "lm", 24); lab(R0 + 70, PY(11)
 ny = dy1 + 110
 notes = [("Screen VCC on 3.3 V:", " safe whether or not the J1 jumper on the screen board is bridged."),
          ("LED (8) on GPIO 14:", " fine if your screen has a small 3-leg transistor by the LED pin. No transistor? LED to 3V3 instead."),
-         ("Before plugging the ESP32 in:", " ~3.9 V after D1 on a full cell, 3V3 to GND not shorted, VBAT/2 about half the battery."),
+         ("Before plugging the ESP32 in:", " set the MT3608 to 5.1 V first, ~4.8 V after D1, 3V3 to GND not shorted, VBAT/2 about half the battery."),
          ("USB into the ESP32:", " rocker OFF first. The box has no wire to the person, so charging while the HALO is worn is fine.")]
 for i, (a, b) in enumerate(notes):
     d.text((64, ny + i * 48), a, font=RAJ(31), fill=C["v5"] if i in (2, 3) else INK)
