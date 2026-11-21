@@ -1,5 +1,5 @@
 """NeuroX box v3.1 - ALL button parts in one Bambu Studio file (A1 mini + AMS lite, 180 x 180 bed).
-  gray: 4 button guides, 4 switch cradles, 3 caps (9.0 mm switch, caps 7 mm above the lid)
+  gray: 4 button guides, 4 switch cradles, 3 caps (9.0 mm switch, caps 5.5 mm above the lid)
   red : STOP cap (9.0 mm switch), STOP top, STOP guard
 Run: python3 make_buttons_all.py   ->  caps_fix_v3.1/NeuroX_Box_v3.1_buttons_ALL_9.0mm_switch.3mf"""
 import os, sys, trimesh
@@ -9,7 +9,7 @@ import box_buttons_cq as BB
 import make_3mf_v3 as M
 
 CAPS = os.path.join(HERE, "caps_fix_v3.1"); TMP = os.path.join(HERE, "build", "buttons_all"); os.makedirs(TMP, exist_ok=True)
-SW = "9.0mm_switch_7mm_high"
+SW = os.environ.get("CAP_SW", "9.0mm_switch_5.5mm_high")   # gray caps 5.5 mm above the lid (7 mm was too tall)
 
 
 def ld(p):
@@ -38,7 +38,7 @@ P = 36   # pitch
 objs = []
 objs += [M.place(it(f"button_guide_{i+1}", guide, "MG"), 36 + i * P, 36) for i in range(4)]
 objs += [M.place(it(f"switch_cradle_{i+1}", cradle, "MG"), 36 + i * P, 74) for i in range(4)]
-objs += [M.place(it(f"button_cap_{i+1} (9.0 mm switch, 7 mm high)", cap, "MG"), 36 + i * P, 108) for i in range(3)]
+objs += [M.place(it(f"button_cap_{i+1} (9.0 mm switch, 5.5 mm high)", cap, "MG"), 36 + i * P, 108) for i in range(3)]
 objs += [M.place(it("STOP_cap (9.0 mm switch)", stop_cap, "RD"), 36 + 3 * P, 108)]
 objs += [M.place(it("STOP_top", stop_top, "RD"), 54, 146), M.place(it("STOP_guard", stop_guard, "RD"), 108, 146)]
 
@@ -66,3 +66,9 @@ for tag, items, cols, pitch, x0, y0 in (("GRAY", gray, 4, 38, 33, 40), ("RED", r
     p = os.path.join(CAPS, f"NeuroX_Box_v3.1_buttons_{tag}_9.0mm_switch.3mf")
     M.write_3mf(p, regrid(items, cols, pitch, x0, y0), f"NeuroX box v3.1 - button parts, {tag.lower()} only (9.0 mm switches)")
     print(os.path.basename(p), len(items), "objects")
+
+# ---- just the 3 gray caps, for a quick reprint ----
+p = os.path.join(CAPS, "NeuroX_Box_v3.1_3_caps_ONLY_9.0mm_switch_5.5mm_high.3mf")
+M.write_3mf(p, [M.place(it(f"button_cap_{i+1} (5.5 mm high)", cap, "MG"), 60 + i * 30, 90) for i in range(3)],
+            "NeuroX box v3.1 - 3 gray caps, 5.5 mm above the lid, 9.0 mm switches")
+print(os.path.basename(p))
