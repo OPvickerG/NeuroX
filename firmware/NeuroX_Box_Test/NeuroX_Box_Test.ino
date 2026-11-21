@@ -50,6 +50,7 @@
 #define TFT_SPI_HZ     20000000UL     // 20 MHz is safe on a 15 cm ribbon; short wires can go 40000000UL
 #define TOUCH_ROTATION TFT_ROTATION
 #define TOUCH_USE_IRQ  0              // 0 = poll the touch chip (works even if T_IRQ is not wired)
+#define ROCKER_OFF_MV  1000           // battery reads under this (mV) = rocker OFF, box running on USB. 700 works too.
 
 // ---------------- pins (BOX S3 BOARD WIRING) ----------------
 static const int8_t PIN_TFT_SCK = 12, PIN_TFT_MOSI = 11, PIN_TFT_MISO = 10;
@@ -414,7 +415,7 @@ static void powerLive() {
   char b[48];
   snprintf(b, sizeof(b), "%.2f V  %u%%", batMv / 1000.0f, (unsigned)lipoPct(batMv)); valueBox(12, 76, 200, b, FT_LG, batOk() ? C_GREEN : C_RED);
   snprintf(b, sizeof(b), "GPIO 2 reads %.0f mV (half of it)", pinMv); valueBox(12, 96, 300, b, FT_TINY, C_MUT);
-  const char *why = batMv < 500 ? "0 V: R1/R2 or the VBAT wire to GPIO 2 missing" : batMv < 3200 ? "low: charge it, or rocker OFF?" : batMv > 4350 ? "too high: check R1 = R2 = 100k" : "in range";
+  const char *why = batMv < ROCKER_OFF_MV ? "rocker OFF (on USB): switch it ON to test. Still 0 V? VBAT wire / R1 R2" : batMv < 3200 ? "low: charge it, or rocker OFF?" : batMv > 4350 ? "too high: check R1 = R2 = 100k" : "in range";
   valueBox(12, 112, 300, why, FT_TINY, batOk() ? C_MUT : C_AMBER);
   snprintf(b, sizeof(b), "now: %s", usb ? "USB IN (GPIO 21 HIGH)" : "no USB (GPIO 21 LOW)"); valueBox(12, 184, 300, b, FT_SM, usb ? C_AMBER : C_FG);
   snprintf(b, sizeof(b), "seen plugged %s   seen unplugged %s", usbSeenHi ? "YES" : "no", usbSeenLo ? "YES" : "no");
@@ -468,7 +469,7 @@ static void drawReportPage() {
 // ============================================================================
 static void enterPage(Page p) {
   if (page == PG_POWER && p != PG_POWER) {                 // leaving the power step: grade it
-    if (!batOk()) setResult(PG_POWER, R_FAIL, batMv < 500 ? "battery reads 0 V" : "battery out of range");
+    if (!batOk()) setResult(PG_POWER, R_FAIL, batMv < ROCKER_OFF_MV ? "rocker OFF, or VBAT not wired" : "battery out of range");
     else if (!usbSeenHi) setResult(PG_POWER, R_FAIL, "battery ok, USB never seen");
     else setResult(PG_POWER, R_PASS, "battery + USB sense ok");
   }

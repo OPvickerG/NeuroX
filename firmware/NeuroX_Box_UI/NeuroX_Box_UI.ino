@@ -74,6 +74,7 @@
 #define TOUCH_FLIP_X      0       // tap lands mirrored left/right? set 1
 #define TOUCH_FLIP_Y      0       // tap lands mirrored up/down? set 1
 #define BUZZER_ENABLED    1
+#define ROCKER_OFF_MV     1000    // battery reads under this (mV) = rocker OFF, box running on USB. 700 works too.
 
 static const uint16_t TS_MINX = 300, TS_MAXX = 3800, TS_MINY = 300, TS_MAXY = 3800;  // touch calibration (raw)
 static const uint32_t AUTOLOCK_MS     = 3000;   // ACTIVE with no gesture this long -> LOCKED
@@ -205,7 +206,7 @@ static uint32_t simBlinkT = 0xFFFFFFFF, simClenchT = 0xFFFFFFFF; static bool sim
 static float simEnv = 0; static uint32_t lcg = 12345;
 
 // power, tilt
-static float boxMv = 3900; static bool usbIn = false; static uint32_t pwrMs = 0;
+static float boxMv = 3900; static bool usbIn = false, rockerOff = false, pwrFirst = true; static uint32_t pwrMs = 0;
 static bool mpuOk = false; static float tiltPitch = 0, tiltRoll = 0; static uint32_t mpuMs = 0;
 
 // hardware
@@ -624,7 +625,13 @@ static void powerService() {
   if (now - pwrMs >= 500) {
     pwrMs = now;
     const float mv = analogReadMilliVolts(PIN_VBAT) * 2.0f;                 // 100k / 100k divider
-    boxMv += (mv - boxMv) * 0.2f;
+    if (mv < ROCKER_OFF_MV) rockerOff = true;                               // no LiPo can be this low: the rocker is OFF
+    else {
+      if (rockerOff || pwrFirst) boxMv = mv;                                // just switched on: jump straight to the real value
+      else boxMv += (mv - boxMv) * 0.2f;
+      rockerOff = false;
+    }
+    pwrFirst = false;
     usbIn = digitalRead(PIN_USB_SENSE) == HIGH;
   }
   if (mpuOk && now - mpuMs >= 100) {
@@ -706,7 +713,8 @@ static void statusBar() {
   text("HALO", 88, 14, FT_TINY, alive ? C_FG : C_RED);
   for (uint8_t i = 0; i < 3; ++i) fillR(114 + i * 4, 12 - i * 3, 3, 3 + i * 3, i < q ? C_TEAL : C_LINE);
   text("CHAIR", 132, 14, FT_TINY, C_FG); fillC(166, 10, 3, radioReady ? (alive ? C_GREEN : C_AMBER) : C_RED);
-  battIcon(190, 5, haloPct(), false, "H"); battIcon(242, 5, lipoPct(boxMv), usbIn, "BOX");
+  battIcon(190, 5, haloPct(), false, "H"); if (rockerOff) { text("BOX", 240, 13, FT_TINY, C_MUT, AL_R); text("USB", 252, 14, FT_TINY, C_TEAL, AL_C); }
+  else battIcon(242, 5, lipoPct(boxMv), usbIn, "BOX");
   if (U.sim) { fillRR(268, 4, 24, 12, 3, C_AMBER); text("SIM", 280, 14, FT_TINY, C_BG, AL_C); }
   lockIcon(299, 3, 15, U.mode == M_ACTIVE ? C_GREEN : C_AMBER, U.mode == M_ACTIVE);
 }
@@ -838,7 +846,8 @@ static void drawPage() {
     rowKV(4, "source", U.sim ? "SIM" : "HALO", C_FG);
     softKeys("back", "recalibrate", U.sim ? "use HALO" : "use SIM");
   } else if (U.page == P_POWER) {
-    snprintf(b, sizeof(b), "%u%%  %.2f V", (unsigned)lipoPct(boxMv), boxMv / 1000.0f); rowKV(0, "BOX", b, C_FG, 186);
+    if (rockerOff) rowKV(0, "BOX", "rocker OFF (on USB)", C_MUT, 186);
+    else { snprintf(b, sizeof(b), "%u%%  %.2f V", (unsigned)lipoPct(boxMv), boxMv / 1000.0f); rowKV(0, "BOX", b, C_FG, 186); }
     if (U.sim) snprintf(b, sizeof(b), "64%% (SIM)"); else snprintf(b, sizeof(b), "%u%%  %.2f V", (unsigned)lipoPct(haloBattMv), haloBattMv / 1000.0f);
     rowKV(1, "HALO", b, C_FG, 186);
     rowKV(2, "USB", usbIn ? "charging" : "not in", usbIn ? C_AMBER : C_FG, 186);
