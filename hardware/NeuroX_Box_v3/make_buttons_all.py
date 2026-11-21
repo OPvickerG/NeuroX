@@ -57,3 +57,12 @@ out = os.path.join(CAPS, "NeuroX_Box_v3.1_buttons_ALL_9.0mm_switch.3mf")
 M.write_3mf(out, objs, "NeuroX box v3.1 - all button parts: 4 guides, 4 cradles, 3 caps (gray) + STOP cap, top, guard (red), 9.0 mm switches")
 trimesh.util.concatenate(ms).export(os.path.join(TMP, "plate_preview.stl"))
 print(os.path.basename(out), len(objs), "objects", round(sum(abs(m.volume) for m in ms) / 1000, 2), "cm3")
+
+# ---- the same parts as two one-colour plates (no AMS swaps, no prime tower) ----
+gray = [o for o in objs if o[1][0][0] == "MG"]; red = [o for o in objs if o[1][0][0] == "RD"]
+def regrid(items, cols, pitch, x0, y0):
+    return [M.place((n, [(c, m.copy()) for c, m in parts]), x0 + (i % cols) * pitch, y0 + (i // cols) * pitch) for i, (n, parts) in enumerate(items)]
+for tag, items, cols, pitch, x0, y0 in (("GRAY", gray, 4, 38, 33, 40), ("RED", red, 3, 42, 48, 90)):
+    p = os.path.join(CAPS, f"NeuroX_Box_v3.1_buttons_{tag}_9.0mm_switch.3mf")
+    M.write_3mf(p, regrid(items, cols, pitch, x0, y0), f"NeuroX box v3.1 - button parts, {tag.lower()} only (9.0 mm switches)")
+    print(os.path.basename(p), len(items), "objects")
