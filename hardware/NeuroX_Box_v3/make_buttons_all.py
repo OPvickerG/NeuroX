@@ -1,7 +1,8 @@
 """NeuroX box v3.1 - ALL button parts in one Bambu Studio file (A1 mini + AMS lite, 180 x 180 bed).
-  gray: 4 button guides, 4 switch cradles, 3 caps (9.0 mm switch, caps 5.5 mm above the lid)
-  red : STOP cap (9.0 mm switch), STOP top, STOP guard
-Run: python3 make_buttons_all.py   ->  caps_fix_v3.1/NeuroX_Box_v3.1_buttons_ALL_9.0mm_switch.3mf"""
+  gray: 4 button guides, 4 switch cradles, 3 caps (caps 5.5 mm above the lid)
+  red : STOP cap, STOP top, STOP guard
+Plunger length fits a 9.6 mm switch (0.6 mm shorter than the 9.0 mm caps, picked with the sizer: 3 dots).
+Run: python3 make_buttons_all.py   ->  caps_fix_v3.1/NeuroX_Box_v3.1_buttons_{ALL,GRAY,RED}_9.6mm_switch.3mf"""
 import os, sys, trimesh
 import cadquery as cq
 HERE = os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0, HERE)
@@ -9,7 +10,8 @@ import box_buttons_cq as BB
 import make_3mf_v3 as M
 
 CAPS = os.path.join(HERE, "caps_fix_v3.1"); TMP = os.path.join(HERE, "build", "buttons_all"); os.makedirs(TMP, exist_ok=True)
-SW = os.environ.get("CAP_SW", "9.0mm_switch_5.5mm_high")   # gray caps 5.5 mm above the lid (7 mm was too tall)
+SWH = os.environ.get("CAP_SWH", "9.6")                       # switch height the plunger is cut for (sizer: 3 dots)
+SW = f"{SWH}mm_switch_5.5mm_high"                            # caps 5.5 mm above the lid (7 mm was too tall)
 
 
 def ld(p):
@@ -38,8 +40,8 @@ P = 36   # pitch
 objs = []
 objs += [M.place(it(f"button_guide_{i+1}", guide, "MG"), 36 + i * P, 36) for i in range(4)]
 objs += [M.place(it(f"switch_cradle_{i+1}", cradle, "MG"), 36 + i * P, 74) for i in range(4)]
-objs += [M.place(it(f"button_cap_{i+1} (9.0 mm switch, 5.5 mm high)", cap, "MG"), 36 + i * P, 108) for i in range(3)]
-objs += [M.place(it("STOP_cap (9.0 mm switch)", stop_cap, "RD"), 36 + 3 * P, 108)]
+objs += [M.place(it(f"button_cap_{i+1} ({SWH} mm switch, 5.5 mm high)", cap, "MG"), 36 + i * P, 108) for i in range(3)]
+objs += [M.place(it(f"STOP_cap ({SWH} mm switch)", stop_cap, "RD"), 36 + 3 * P, 108)]
 objs += [M.place(it("STOP_top", stop_top, "RD"), 54, 146), M.place(it("STOP_guard", stop_guard, "RD"), 108, 146)]
 
 ms = [m for _, parts in objs for _, m in parts]
@@ -53,8 +55,8 @@ for i in range(len(bx)):
     for j in range(i + 1, len(bx)):
         (a0, a1), (b0, b1) = bx[i], bx[j]
         assert a1[0] + 2 < b0[0] or b1[0] + 2 < a0[0] or a1[1] + 2 < b0[1] or b1[1] + 2 < a0[1], (i, j)
-out = os.path.join(CAPS, "NeuroX_Box_v3.1_buttons_ALL_9.0mm_switch.3mf")
-M.write_3mf(out, objs, "NeuroX box v3.1 - all button parts: 4 guides, 4 cradles, 3 caps (gray) + STOP cap, top, guard (red), 9.0 mm switches")
+out = os.path.join(CAPS, f"NeuroX_Box_v3.1_buttons_ALL_{SWH}mm_switch.3mf")
+M.write_3mf(out, objs, f"NeuroX box v3.1 - all button parts: 4 guides, 4 cradles, 3 caps (gray) + STOP cap, top, guard (red), plunger for {SWH} mm switches")
 trimesh.util.concatenate(ms).export(os.path.join(TMP, "plate_preview.stl"))
 print(os.path.basename(out), len(objs), "objects", round(sum(abs(m.volume) for m in ms) / 1000, 2), "cm3")
 
@@ -63,12 +65,12 @@ gray = [o for o in objs if o[1][0][0] == "MG"]; red = [o for o in objs if o[1][0
 def regrid(items, cols, pitch, x0, y0):
     return [M.place((n, [(c, m.copy()) for c, m in parts]), x0 + (i % cols) * pitch, y0 + (i // cols) * pitch) for i, (n, parts) in enumerate(items)]
 for tag, items, cols, pitch, x0, y0 in (("GRAY", gray, 4, 38, 33, 40), ("RED", red, 3, 42, 48, 90)):
-    p = os.path.join(CAPS, f"NeuroX_Box_v3.1_buttons_{tag}_9.0mm_switch.3mf")
-    M.write_3mf(p, regrid(items, cols, pitch, x0, y0), f"NeuroX box v3.1 - button parts, {tag.lower()} only (9.0 mm switches)")
+    p = os.path.join(CAPS, f"NeuroX_Box_v3.1_buttons_{tag}_{SWH}mm_switch.3mf")
+    M.write_3mf(p, regrid(items, cols, pitch, x0, y0), f"NeuroX box v3.1 - button parts, {tag.lower()} only (plunger for {SWH} mm switches)")
     print(os.path.basename(p), len(items), "objects")
 
 # ---- just the 3 gray caps, for a quick reprint ----
-p = os.path.join(CAPS, "NeuroX_Box_v3.1_3_caps_ONLY_9.0mm_switch_5.5mm_high.3mf")
+p = os.path.join(CAPS, f"NeuroX_Box_v3.1_3_caps_ONLY_{SWH}mm_switch_5.5mm_high.3mf")
 M.write_3mf(p, [M.place(it(f"button_cap_{i+1} (5.5 mm high)", cap, "MG"), 60 + i * 30, 90) for i in range(3)],
-            "NeuroX box v3.1 - 3 gray caps, 5.5 mm above the lid, 9.0 mm switches")
+            f"NeuroX box v3.1 - 3 gray caps, 5.5 mm above the lid, plunger for {SWH} mm switches")
 print(os.path.basename(p))
