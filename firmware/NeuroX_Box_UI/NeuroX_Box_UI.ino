@@ -33,7 +33,7 @@
  *  PINS  (match the BOX S3 BOARD WIRING sheet)
  *    screen  SCK 12  MOSI 11  MISO 10  CS 9  DC 8  RESET 18  LED 14
  *    touch   T_CS 17  T_IRQ 16  (T_CLK / T_DIN / T_DO share SCK / MOSI / MISO)
- *    buttons OK 5  LEFT 6  NEW 7  STOP 15   (other leg to GND)
+ *    buttons OK 5  LEFT 6  NEW 7  STOP 38   (other leg to GND)
  *    buzzer 13     MPU-6050 SDA 41 SCL 42     battery sense 2   USB sense 21
  * ============================================================================
  */
@@ -90,7 +90,7 @@ static const uint32_t HALO_TIMEOUT_MS = 500;    // no HALO packet this long = li
 static const int8_t PIN_TFT_SCK = 12, PIN_TFT_MOSI = 11, PIN_TFT_MISO = 10;
 static const int8_t PIN_TFT_CS = 9, PIN_TFT_DC = 8, PIN_TFT_RST = 18, PIN_TFT_LED = 14;
 static const int8_t PIN_T_CS = 17, PIN_T_IRQ = 16;
-static const int8_t PIN_BTN_OK = 5, PIN_BTN_LEFT = 6, PIN_BTN_NEW = 7, PIN_BTN_STOP = 15;
+static const int8_t PIN_BTN_OK = 5, PIN_BTN_LEFT = 6, PIN_BTN_NEW = 7, PIN_BTN_STOP = 38;   // STOP moved from GPIO 15 to 38 (J3 pin 10)
 static const int8_t PIN_BUZZER = 13, PIN_SDA = 41, PIN_SCL = 42, PIN_VBAT = 2, PIN_USB_SENSE = 21;
 
 // =============================================================================

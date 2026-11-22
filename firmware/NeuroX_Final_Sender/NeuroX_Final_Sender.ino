@@ -29,7 +29,7 @@
  *      similar in size).
  *    - Your bite length sets the double-clench window and the talking filter.
  *    - Relock after 3 s never cuts a gesture that is being measured.
- *    - STOP button (GPIO 15, to GND): stops and LOCKS at once.
+ *    - STOP button (GPIO 38, to GND): stops and LOCKS at once.
  *    Same electrodes, same car receiver (RC_Car_LR_Receiver).
  *
  *  SAFETY LOCK (SAFE):
@@ -376,7 +376,7 @@ static const uint16_t SETTLE_JAW_SAMPLES     = 12;      // 47 ms of jaw EMG afte
 static const uint16_t WATCH_SIZE_SAMPLES     = 72;      // 2nd blink: its dip is followed (max 0.28 s) to measure its size   // calibrated: 2nd blink of a double blink >= 70 % of your blink
 // ---- FINAL: buttons (to GND; unconnected = not pressed) ----
 static const bool     BUTTONS_ENABLED        = true;
-static const uint8_t  PIN_BTN_STOP           = 15;      // STOP: stop + LOCK
+static const uint8_t  PIN_BTN_STOP           = 38;      // STOP: stop + LOCK (was 15)
 static const uint8_t  PIN_BTN_NEW            = 7;       // NEW person: calibrate again
 static const uint8_t  PIN_BTN_BOOT           = 0;       // BOOT button on the DevKit: hold 1 s = calibrate again
 static const float    TRAIN_DEEP_PEAK_FRAC   = 0.35f;   // dip rule needs an upward phase >= 35 % of your blink peak
@@ -1193,7 +1193,7 @@ static void printHelp() {
   txPrintf(true, "       j/k jaw clench FORWARD 10%% more / less sensitive (blink unaffected)\n");
   txPrintf(true, "       f/b test pulse FWD/REV | s STOP+clear+re-arm | c recalibrate (sit still 2 s)\n");
   txPrintf(true, "       t / a calibrate again (follow the beeps) | y old keyboard-paced training | u back to factory v13.2 thresholds\n");
-  txPrintf(true, " AUTO : calibrates by itself at power-on | NEW button GPIO7 or hold BOOT 1 s = calibrate again | STOP button GPIO15\n");
+  txPrintf(true, " AUTO : calibrates by itself at power-on | NEW button GPIO7 or hold BOOT 1 s = calibrate again | STOP button GPIO38\n");
   txPrintf(true, " LOCK : starts LOCKED | close your eyes firmly 3 s = unlock | 3 s idle = lock | o = lock/unlock | z = buzzer test (GPIO13)\n");
   txPrintf(true, " STEER: blink-blink = TURN LEFT | bite-relax-bite = TURN RIGHT | l/r test turn | [ ] turn time (%lu ms)\n",
            (unsigned long)turnPulseMs);
