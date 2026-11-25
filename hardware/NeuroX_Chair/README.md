@@ -14,7 +14,7 @@ Made for the **Vissco Rodeo Veer** (24" mag wheels). The whole unit clamps onto 
 | Current | about 1.5–2 A per motor running, up to about 8 A per motor stalled; 20 A fuse |
 
 ## Print
-1. `NeuroX_Chair_tube_sizer.3mf` first (20 min): push it over the backrest tube; the smallest hole that slides on is your size. Notches above the hole: 1 = 19, 2 = 20, 3 = 22, **4 = 25**, 5 = 28, 6 = 30, 7 = 32 mm.
+1. `NeuroX_Chair_tube_sizer.3mf` first (20 min): hold it against the armrest tube; the smallest hole that slides on is your size. Notches above the hole: 1 = 19, 2 = 20, 3 = 22, **4 = 25**, 5 = 28, 6 = 30, 7 = 32 mm.
 2. Per wheel, print each twice:
    - `NeuroX_Chair_drive_ONE_WHEEL.3mf`: motor pod + spring bar + 2 roller cores
    - `NeuroX_Chair_mount_ONE_WHEEL_25mm_armrest.3mf` (or `_22mm_` / `_28mm_`): arm + 2 clamp halves
