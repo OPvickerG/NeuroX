@@ -1,39 +1,36 @@
-"""Fit check: pod + hanger + motors + arm + clamp on a 24" wheel, clamp on a vertical 25 mm backrest tube.
-Checks the nominal position and both ends of the sideways adjustment, driving and lifted."""
-import math
+"""Fit check, arm v2 on the Vissco Rodeo Veer armrest: clamp on the horizontal 25 mm armrest tube, arm down to the spring bar.
+Checks 9 tube positions (3 sideways x 3 heights) across the adjustment range, driving and lifted."""
 import cadquery as cq
 import chair_drive_cq as C
 import chair_mount_cq as Mt
-from chair_check import tyre, rim, motors, bolts, vol, check, ymid
 import chair_check as K
+from chair_check import tyre, rim, vol, check
 
 pod, hang = C.pod(), C.hanger()
-D = 25
-o, i, face = Mt.clamp_halves(D)
-print("ARM ON THE HANGER")
-check("deck sits on the hanger (touching, no overlap)", vol(Mt.arm(), hang) < 0.5 and abs(Mt.DECK_Z0 - C.BAR_Z1) < 0.01)
-check("deck slots line up with hanger holes X +/-24", 24 in (12, 24, 36))
-check("rear spring nut reachable (deck ends before it)", Mt.DECK_X0 > -C.TAB_X + 12, f"deck from X {Mt.DECK_X0:.0f}, nut at X {-C.TAB_X:.0f}")
-for dy, label in ((0, "nominal"), (-20, "arm slid 20 mm inboard"), (20, "arm slid 20 mm outboard")):
-    arm = Mt.arm().translate((0, dy, 0))
-    wall_in = Mt.Y_WALL - Mt.WALL_T + dy
-    post_y = wall_in - face
-    cl = Mt.place_clamp(o, D, -40, wall_in, Mt.ZC).union(Mt.place_clamp(i, D, -40, wall_in, Mt.ZC))
-    post = C.cyl_z(-40, post_y, D / 2, 200, 520)
-    print(f"{label.upper()}: tube centre at Y {post_y:.0f} mm (tyre centre = 0, tyre side at -{C.TYRE_W / 2:.1f})")
-    for z_off, st in ((0.0, "driving"), (C.BAR_GAP - 3.0, "lifted")):
-        P = pod.translate((0, 0, z_off)); M = K.motors(z_off); B = K.bolts(z_off)
-        for n, part in (("arm", arm), ("clamp", cl)):
-            check(f"  {st}: {n} clear of tyre", vol(part, tyre) < 0.5)
-            check(f"  {st}: {n} clear of pod", vol(part, P) < 0.5)
-            check(f"  {st}: {n} clear of motors", vol(part, M) < 0.5)
-            check(f"  {st}: {n} clear of spring bolts", vol(part, B) < 0.5)
-            check(f"  {st}: {n} clear of push rim", vol(part, rim) < 0.5)
-    check("  tube clear of the tyre", vol(post, tyre) < 0.5, f"gap {abs(post_y) - D / 2 - C.TYRE_W / 2:.0f} mm")
-    check("  clamp grips the tube (bore fits, no overlap)", vol(cl, post) < 1.0)
-    check("  arm clear of the clamp halves", vol(arm, cl) < 1.0)
+o, i, face = Mt.clamp_halves(25)
+top = C.R_T
+zlo, zhi = Mt.WALL_Z0 + 10, Mt.WALL_Z1 - 10                      # clamp bolt range on the wall slots
+print("ARM ON THE SPRING BAR")
+check("deck sits on the spring bar, no overlap", vol(Mt.arm(), hang) < 0.5 and abs(Mt.DECK_Z0 - C.BAR_Z1) < 0.01)
+check("deck clear of the spring nuts (X +/-69)", Mt.DECK_X < C.TAB_X - 12, f"deck to X +/-{Mt.DECK_X:.0f}")
+for y_t in (Mt.Y_T_NOM - 40, Mt.Y_T_NOM, Mt.Y_T_NOM + 40):
+    arm = Mt.arm(Mt.Y_T_NOM, face).translate((0, y_t - Mt.Y_T_NOM, 0))
+    hole_ok = abs((y_t - Mt.Y_T_NOM) - 0) <= Mt.DECK_SLOT_L / 2 + 0.01
+    for z_t in (zlo, (zlo + zhi) / 2, zhi):
+        cl = Mt.place_clamp(o, 0, y_t, z_t).union(Mt.place_clamp(i, 0, y_t, z_t))
+        tube = cq.Workplane("YZ").center(y_t, z_t).circle(12.5).extrude(300).translate((-150, 0, 0))
+        tag = f"tube {abs(y_t):.0f} mm inboard, {z_t - top:.0f} mm above the tyre top"
+        bad = []
+        for z_off in (0.0, C.BAR_GAP - 3.0):
+            P = pod.translate((0, 0, z_off)); M = K.motors(z_off); B = K.bolts(z_off)
+            for n, part in (("arm", arm), ("clamp", cl), ("tube", tube)):
+                for m, other in (("tyre", tyre), ("pod", P), ("motors", M), ("spring bolts", B), ("push rim", rim)):
+                    if vol(part, other) > 0.5: bad.append(f"{n}/{m}")
+        if vol(cl, arm) > 1.0: bad.append("clamp/arm")
+        if vol(cl, tube) > 1.0: bad.append("clamp/tube")
+        check(tag, not bad and hole_ok, ", ".join(sorted(set(bad))))
 print("\nRANGES")
-print(f"  tube centre sideways: {Mt.Y_WALL - Mt.WALL_T - 20 - face:.0f} .. {Mt.Y_WALL - Mt.WALL_T + 20 - face:.0f} mm inboard of the tyre centre (25 mm tube)")
-print(f"  tube front/back: vertical tube anywhere from X {Mt.SLOT_X0:.0f} to {Mt.SLOT_X1:.0f} mm (0 = top of the tyre, + = forward)")
-print(f"  height: vertical tube = slide the clamp; horizontal tube centre {Mt.ROWS[0] - C.R_T:.0f} / {Mt.ROWS[1] - C.R_T:.0f} / {Mt.ROWS[2] - C.R_T:.0f} mm above the tyre top")
+print(f"  sideways: armrest tube centre {abs(Mt.Y_T_NOM + 40):.0f}-{abs(Mt.Y_T_NOM - 40):.0f} mm inboard of the tyre centre")
+print(f"  height:   armrest tube centre {zlo - top:.0f}-{zhi - top:.0f} mm above the top of the tyre")
+print(f"  front/back: slide the clamp along the 14 cm bare tube; the rollers work anywhere within +/-30 mm of the tyre top")
 print("\nALL PASS" if K.ok_all else "\nSOME CHECKS FAILED")

@@ -1,7 +1,7 @@
 # NeuroX Chair: top friction drive for a manual wheelchair
 
 Two Johnson 12 V 500 RPM geared motors sit on top of each rear tyre. Their rubber rollers press on the tread and drive the wheel. Tighten two nuts and the rollers lift off, so the chair can be pushed by hand again.
-The whole unit clamps onto the **vertical backrest tube** just behind the top of the tyre: rubber-lined, 4 bolts, no drilling.
+Made for the **Vissco Rodeo Veer** (24" mag wheels). The whole unit clamps onto the **bare part of the armrest tube** (25 mm, the 14 cm between the grey foam and the weld at the backrest): rubber-lined, 4 bolts, no drilling.
 
 ![assembly](img/chair_drive_assembly.png)
 
@@ -17,7 +17,8 @@ The whole unit clamps onto the **vertical backrest tube** just behind the top of
 1. `NeuroX_Chair_tube_sizer.3mf` first (20 min): push it over the backrest tube; the smallest hole that slides on is your size. Notches above the hole: 1 = 19, 2 = 20, 3 = 22, **4 = 25**, 5 = 28, 6 = 30, 7 = 32 mm.
 2. Per wheel, print each twice:
    - `NeuroX_Chair_drive_ONE_WHEEL.3mf`: motor pod + spring bar + 2 roller cores
-   - `NeuroX_Chair_mount_ONE_WHEEL_25mm_tube.3mf` (or `_22mm_` / `_28mm_`): arm + 2 clamp halves
+   - `NeuroX_Chair_mount_ONE_WHEEL_25mm_armrest.3mf` (or `_22mm_` / `_28mm_`): arm + 2 clamp halves
+   - Before the pods: `NeuroX_Chair_MOTOR_fitcheck.3mf` (15 min): ring over the gearbox, roller on the shaft
 3. Optional: `NeuroX_Chair_rollers_TPU_x4.3mf` = solid 24 mm TPU rollers instead of cores + inner tube.
 
 PETG if you have it, PLA works. 5 walls, 40 % gyroid, 0.2 mm, no supports; every part is already flat on the plate.
@@ -30,7 +31,7 @@ PETG if you have it, PLA works. 5 walls, 40 % gyroid, 0.2 mm, no supports; every
 - 2 x compression spring, 10–12 mm outside, about 45 mm long, 1–1.2 mm wire
 - Bicycle inner tube, 2 pieces about 20 mm long (roller sleeves)
 - Clamp: 4 x M5 x 30 + 4 x M5 nut; 1 piece of bicycle inner tube about 60 x 80 mm (liner)
-- Arm to clamp: 2 x M5 x 16 + 2 x M5 nut (captive in the clamp)
+- Arm to clamp: 2 x M5 x 20 + washers + 2 x M5 nut (captive in the clamp)
 - Arm to spring bar: 2 x M5 x 25 + 2 x M5 nut + washers
 - Optional: 1 small hose clip under the clamp as a stop collar
 
@@ -38,17 +39,18 @@ PETG if you have it, PLA works. 5 walls, 40 % gyroid, 0.2 mm, no supports; every
 1. **Rollers:** M3 nut into the slot, stretch a piece of inner tube over the core, screw the M3 x 6 into the nut. Push the roller on the shaft (the shaft tip at the outer face) and tighten the screw onto the **flat** of the shaft.
 2. **Pod:** slide 4 M3 nuts into the slots, push both gearboxes into the rings with the **shaft at the bottom**, both motors on the same side. Tighten the 4 M3 x 12 set screws.
 3. **Springs:** M5 bolt up through each pod tab, spring on the bolt, then through the hanger, washer + nut on top.
-4. **Clamp nuts:** drop 4 M5 nuts into the hex pockets of the outer clamp half (from the flat face), and slide 2 M5 nuts into the side slots you will use: the top/bottom slots for a vertical tube, the left/right slots for a horizontal tube.
-5. **Arm on the spring bar:** 2 x M5 x 25 down through the deck slots and the bar holes at X = ±24, nuts underneath. Leave them loose.
-6. **Arm to clamp:** 2 x M5 x 16 through the wall slots (top + bottom row) into the clamp's side nuts. Leave them loose.
-7. **On the chair:** wrap the backrest tube with the inner tube where the clamp goes. Put the two clamp halves round it with 4 x M5 x 30. Snug, not tight.
-8. **Line it up:** spring nuts loose. Slide the whole unit so the rollers sit on the **middle of the tread** (deck slots = sideways, wall slots = front/back) and push it **down** until the springs squeeze about 10 mm. Tighten in this order: clamp bolts (firm, crosswise), then the arm-to-clamp bolts, then the deck bolts.
+4. **Clamp nuts:** drop 4 M5 nuts into the hex pockets of the outer clamp half (from the flat face). Slide 2 M5 nuts into the two slots in the **ends** of the outer half (the pair that ends up side by side along the armrest).
+5. **Arm on the spring bar:** 2 x M5 x 25 down through the deck slots and the spring-bar holes at X = ±36 (the outer pair), nuts underneath. Leave them loose.
+6. **On the chair:** wrap the bare armrest tube (between the foam and the weld) with one layer of inner tube. Put the two clamp halves round it with 4 x M5 x 30, flat face of the outer half facing the wheel. Snug, not tight.
+7. **Arm to clamp:** 2 x M5 x 20 through the two tall slots in the arm's wall into the clamp's end nuts. The heads sit in the channels in the deck; an Allen key reaches them from the wheel side. Leave them loose.
+8. **Line it up:** spring nuts loose. Slide the arm on the deck slots until the rollers sit on the **middle of the tread**, slide the clamp along the armrest until the rollers are over the top of the tyre, and push the arm **down** the wall slots until the springs squeeze about 10 mm. Tighten in this order: clamp bolts (firm, crosswise), then the 2 wall bolts, then the 2 deck bolts.
 9. **Engage:** spring nuts loose = rollers pressed on the tyre. **Disengage:** tighten both spring nuts until the rollers lift off. Push the chair by hand.
 
-### Fit (checked in CAD against a 24" wheel, `chair_mount_check.py`)
-- Tube centre can be **39–79 mm inboard** of the tyre centre (deck slots), anywhere **85 mm behind to 35 mm in front** of the top of the tyre (wall slots), at any height (the clamp slides on a vertical tube).
-- On a horizontal tube instead (armrest): turn the clamp 90°, tube centre 53 / 73 / 93 mm above the tyre top (3 slot rows).
-- Nothing touches the tyre, push rim, motors or spring bolts, driving or lifted.
+### Fit (checked in CAD, `chair_mount_check.py`: 9 tube positions, driving and lifted)
+- Armrest tube centre **80–160 mm inboard** of the tyre centre (deck slots) and **29–159 mm above the top of the tyre** (wall slots).
+- Front/back: the clamp slides along the 14 cm of bare tube; the rollers work anywhere within ±30 mm of the top of the tyre.
+- Nothing touches the tyre (45 mm wide), push rim, motors or spring bolts.
+- The deck crosses over the black side guard about **7 cm above the top of the tyre**: check the guard's top edge is lower than that.
 
 ## Wiring
 ![wiring](img/chair_wiring.png)

@@ -4,8 +4,9 @@
          Bore for a 22, 25 or 28 mm tube (print the TUBE SIZER first to find yours).
          Best on the VERTICAL backrest tube just behind the top of the tyre: slide it to any height.
          Also fits a horizontal tube (armrest): turn the clamp 90 degrees, the 4-nut cross pattern allows both.
-  ARM    flat deck that bolts on the hanger (2 x M5, slots = 40 mm sideways adjust) + a wall with 3 rows of slots
-         that bolts to the clamp (2 x M5, slots = 110 mm front/back adjust). Gussets keep it from flexing.
+  ARM    v2 for the Vissco Rodeo Veer: the clamp goes on the BARE ARMREST TUBE (14 cm between the foam and the weld).
+         Deck bolts on the spring bar (2 x M5, 80 mm sideways slots). Tall wall with 2 full-height slots: the clamp bolts
+         anywhere along 15 cm of height. A centre web + 6 gussets keep it stiff.
 
 Coordinates as chair_drive_cq.py (wheel centre = origin, X forward, Z up, Y outboard). Units mm.
 Run: python3 chair_mount_cq.py
@@ -26,20 +27,16 @@ CL_H = 60.0                       # clamp length along the tube
 FACE = 14.0                       # material from the bore to the mount face
 SIDE = 12.0                       # material beside the bore (bolt bosses)
 CROSS = 20.0                      # mount nuts at (0, +/-20) and (+/-20, 0) on the face
-# ---------------- arm ----------------
-DECK_T, WALL_T = 8.0, 10.0
-DECK_Z0 = C.BAR_Z1                                    # deck sits on top of the hanger
-ZC = DECK_Z0 + DECK_T / 2                             # middle slot row height
-ROWS = (ZC - CROSS, ZC, ZC + CROSS)
-ARM_X0, ARM_X1 = -95.0, 45.0                          # wall length
-DECK_X0 = -50.0                                       # deck stops before the rear spring nut (X = -69): you can reach it
-SLOT_X0, SLOT_X1 = -85.0, 35.0                        # wall slots (bolt centres can sit anywhere in between)
-Y_WALL = -22.0                                        # wall outboard face, nominal (deck slots move it +/-20)
-DECK_Y1 = YMID + 30.0
-DECK_SLOT_X = 24.0                                    # deck slots line up with the hanger holes at X +/-24
-WALL_Z0, WALL_Z1 = ZC - CROSS - 14, ZC + CROSS + 14
-
-
+# ---------------- arm (v2: Vissco Rodeo Veer armrest tube, horizontal, about 12 cm inboard of the tyre) ----------------
+DECK_T, WALL_T, WEB_H = 10.0, 8.0, 16.0
+DECK_Z0 = C.BAR_Z1                                    # deck sits on top of the hanger (spring bar)
+DECK_X = 45.0                                         # deck is X -45..45: stays clear of the spring nuts at X +/-69
+DECK_SLOT_X = 36.0                                    # deck slots over the hanger holes at X +/-36 (80 mm sideways travel)
+DECK_SLOT_L = 80.0
+CLAMP_X = 20.0                                        # clamp bolts at X +/-20 (the clamp's nut pair along the tube)
+Y_T_NOM = -120.0                                      # armrest tube centre, nominal (sideways from the tyre centre)
+WALL_Z0, WALL_Z1 = DECK_Z0 - 50.0, DECK_Z0 + 100.0   # tall wall = height range for the clamp
+DECK_Y1 = YMID + DECK_SLOT_L / 2 + 8.0
 def box(x0, x1, y0, y1, z0, z1):
     return cq.Workplane("XY").box(x1 - x0, y1 - y0, z1 - z0, centered=False).translate((x0, y0, z0))
 
@@ -79,22 +76,29 @@ def clamp_halves(D):
 
 
 # ============================================================ ARM
-def arm():
-    deck = box(DECK_X0, ARM_X1, Y_WALL - WALL_T + 0.01, DECK_Y1, DECK_Z0, DECK_Z0 + DECK_T)
-    wall = box(ARM_X0, ARM_X1, Y_WALL - WALL_T, Y_WALL, WALL_Z0, WALL_Z1)
-    a = deck.union(wall)
-    for x in (DECK_X0, ARM_X1 - 8, -5.0):                                                        # gussets
-        for up in (1, -1):
-            if up < 0 and x == -5.0: continue
-            z0, z1 = (DECK_Z0 + DECK_T, WALL_Z1) if up > 0 else (WALL_Z0, DECK_Z0)
-            tri = (cq.Workplane("YZ").polyline([(Y_WALL, z0 if up > 0 else z1), (Y_WALL, z1 if up > 0 else z0),
-                                                (Y_WALL + (z1 - z0), z0 if up > 0 else z1)]).close().extrude(8).translate((x, 0, 0)))
-            a = a.union(tri.intersect(box(-999, 999, -999, DECK_Y1, -999, 999)))
-    for s in (-1, 1):                                                                            # deck slots over the hanger holes
-        a = a.cut(cq.Workplane("XY").center(s * DECK_SLOT_X, YMID).slot2D(40 + M5, M5, 90).extrude(40).translate((0, 0, DECK_Z0 - 10)))
-    for z in ROWS:                                                                               # wall slots, 3 rows
-        a = a.cut(cq.Workplane("XZ").center((SLOT_X0 + SLOT_X1) / 2, z).slot2D(SLOT_X1 - SLOT_X0 + M5, M5 + 0.6, 0)
-                  .extrude(-40).translate((0, Y_WALL - 20, 0)))
+def arm(y_t=Y_T_NOM, face=None):
+    """wall (XZ plane) on the clamp's mount face + deck that sits on the spring bar.
+    y_t = tube centre Y it is drawn for (the real arm slides +/-40 on the deck slots)."""
+    if face is None: face = clamp_halves(25)[2]
+    yw0 = y_t + face; yw1 = yw0 + WALL_T                                                # wall: inboard face touches the clamp
+    deck_y0 = yw1 - 0.01
+    a = box(-DECK_X, DECK_X, yw0, yw1, WALL_Z0, WALL_Z1)                                 # wall
+    a = a.union(box(-DECK_X, DECK_X, deck_y0, DECK_Y1, DECK_Z0, DECK_Z0 + DECK_T))       # deck
+    a = a.union(box(-3, 3, deck_y0, DECK_Y1 - 6, DECK_Z0 + DECK_T - 0.01, DECK_Z0 + DECK_T + WEB_H))   # stiffening web on top
+    for x in (-DECK_X, DECK_X - 6, -3):                                                  # gussets wall <-> deck, above and below
+        for z0, z1, up in ((DECK_Z0 + DECK_T, WALL_Z1, True), (WALL_Z0, DECK_Z0, False)):
+            h = min(z1 - z0, 60.0)
+            pts = [(yw1, z0), (yw1, z0 + h), (yw1 + h, z0)] if up else [(yw1, z1), (yw1, z1 - h), (yw1 + h, z1)]
+            a = a.union(cq.Workplane("YZ").polyline(pts).close().extrude(6).translate((x, 0, 0)))
+    for s_ in (-1, 1):
+        x = s_ * CLAMP_X                                                                  # clamp bolt slots, full height
+        a = a.cut(cq.Workplane("XZ").center(x, (WALL_Z0 + WALL_Z1) / 2).slot2D(WALL_Z1 - WALL_Z0 - 20, M5, 90)
+                  .extrude(-(WALL_T + 2)).translate((0, yw0 - 1, 0)))
+        a = a.cut(box(x - 6.5, x + 6.5, yw1 - 0.5, DECK_Y1 + 1, DECK_Z0 - 1, DECK_Z0 + DECK_T + WEB_H + 1))   # head + key channel
+        for z0, z1 in ((DECK_Z0 + DECK_T, WALL_Z1), (WALL_Z0, DECK_Z0)):                  # ... and through the gussets
+            a = a.cut(box(x - 6.5, x + 6.5, yw1 - 0.5, yw1 + 70, z0 - 1, z1 + 1))
+        xs = s_ * DECK_SLOT_X                                                             # deck slots over the hanger holes
+        a = a.cut(cq.Workplane("XY").center(xs, YMID).slot2D(DECK_SLOT_L + M5, M5, 90).extrude(DECK_T + 2).translate((0, 0, DECK_Z0 - 1)))
     return a
 
 
@@ -114,11 +118,11 @@ def tube_sizer():
     return p
 
 
-def place_clamp(part, D, cx, cy_face, cz, horizontal=False):
-    """local clamp -> chair: mount face against the wall's inboard face (Y = Y_WALL - WALL_T), centre at (cx, cz)."""
-    face = clamp_halves(D)[2]
+def place_clamp(part, cx, y_t, cz, horizontal=True):
+    """local clamp (tube along Z) -> chair: tube centre at (Y = y_t, Z = cz), clamp centre at X = cx.
+    horizontal = tube along X (armrest): the clamp's (0, +/-20) nut pair then lines up with the wall slots at X +/-20."""
     w = part.rotate((0, 0, 0), (0, 1, 0), 90) if horizontal else part
-    return w.translate((cx, cy_face - face, cz))
+    return w.translate((cx, y_t, cz))
 
 
 if __name__ == "__main__":
@@ -133,7 +137,7 @@ if __name__ == "__main__":
         o, i, _ = clamp_halves(D)
         res[f"clamp_{D}_outer"] = stl(o, f"clamp_{D}mm_outer", rx(-90))     # mount face down on the bed
         res[f"clamp_{D}_inner"] = stl(i, f"clamp_{D}mm_inner", rx(-90))     # split face down
-    res["arm"] = stl(arm(), "arm", rx(90))                                   # clamp side of the wall on the bed
+    res["arm"] = stl(arm(), "arm", rx(90))                                   # clamp side of the wall flat on the bed
     res["sizer"] = stl(tube_sizer(), "tube_sizer")
     for n, m in res.items():
         print(f"{n:16s} {m.extents[0]:6.1f} x {m.extents[1]:6.1f} x {m.extents[2]:5.1f}  watertight={m.is_watertight}  {m.volume / 1000:5.1f} cm3")

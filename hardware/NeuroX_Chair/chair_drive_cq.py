@@ -20,8 +20,8 @@ OUT = os.path.join(HERE, "stl"); os.makedirs(OUT, exist_ok=True)
 
 # ---------------- chair (24" rear wheel, solid tyre) - check against your chair ----------------
 R_T = 305.0          # tyre outer radius (24" wheel ~ 610 mm across)
-TYRE_W = 35.0        # tyre width
-RIM_R, RIM_Y, RIM_D = 272.0, 38.0, 19.0     # push rim: radius of its centre line, offset outboard, tube diameter
+TYRE_W = 45.0        # tyre width (Vissco Rodeo Veer mag wheel: ~6 cm over the curve = ~45 mm across)
+RIM_R, RIM_Y, RIM_D = 272.0, TYRE_W / 2 + 20.0, 19.0     # push rim: radius of its centre line, offset outboard, tube diameter
 # ---------------- motor: Johnson 12 V 500 RPM side-shaft geared motor ----------------
 GB_D, GB_T, GB_E = 37.0, 22.0, 8.0          # gearbox diameter, thickness, shaft offset from the gearbox centre
 MOT_D, MOT_L = 36.0, 57.0                    # motor can
