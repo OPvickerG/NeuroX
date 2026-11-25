@@ -9,11 +9,18 @@ def ld(n):
     m = trimesh.load(os.path.join(HERE, "stl", n + ".stl")); m.merge_vertices(); return m
 
 
-pod, hang, rol = ld("pod"), ld("hanger"), ld("roller_core")
+import chair_drive_cq as C
+pod, hang, rol, spl = ld("pod"), ld("hanger"), ld("roller_core"), ld("spool")
+HX, HY = 90.0, 135.0                                                     # hanger centre on the plate
+small = [("roller_1", rol, 70, 110), ("roller_2", rol, 110, 110)] + [(f"spool_{k + 1}", spl, 50 + 25 * k, 145) for k in range(4)]
+# rollers + spools go in the empty space between the hanger legs, under the bar
+wx = C.TAB_X - C.LEG_HX; y0 = HY - hang.extents[1] / 2; y1 = y0 + (C.BAR_Z0 - C.LEG_Z0)
+for n, m, x, y in small:
+    assert HX - wx + 2 < x - m.extents[0] / 2 and x + m.extents[0] / 2 < HX + wx - 2 and y0 + 2 < y - m.extents[1] / 2 and y + m.extents[1] / 2 < y1 - 2, n
 M.write_3mf(os.path.join(HERE, "NeuroX_Chair_drive_ONE_WHEEL.3mf"),
-            [M.place(("chair_pod", [("MG", pod)]), 90, 48), M.place(("chair_hanger", [("MG", hang)]), 90, 118),
-             M.place(("roller_1", [("MG", rol)]), 60, 158), M.place(("roller_2", [("MG", rol)]), 120, 158)],
-            "NeuroX chair drive - one wheel: pod, hanger, 2 rollers (print 2x). PETG or PLA, 5 walls, 40% infill")
+            [M.place(("chair_pod", [("MG", pod)]), 90, 27), M.place(("chair_hanger", [("MG", hang)]), HX, HY)]
+            + [M.place((n, [("MG", m)]), x, y) for n, m, x, y in small],
+            "NeuroX chair drive - one wheel: pod, hanger, 2 rollers, 4 band spools (print 2x). PETG or PLA, 5 walls, 40% infill")
 M.write_3mf(os.path.join(HERE, "NeuroX_Chair_rollers_TPU_x4.3mf"),
             [M.place((f"roller_TPU_{i + 1}", [("MG", ld("roller_TPU_25mm"))]), 50 + i * 30, 90) for i in range(4)],
             "NeuroX chair - 4 solid TPU rollers (only if you print TPU; else use the PLA cores + inner tube)")

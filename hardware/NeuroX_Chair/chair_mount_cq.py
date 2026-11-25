@@ -1,12 +1,12 @@
 """NeuroX chair - frame mount: rubber-lined 2-piece CLAMP on the wheelchair tube + ARM down to the motor hanger.
 
-  CLAMP  2 halves, 4 x M5 x 30. Wrap the tube with 1 layer of bicycle inner tube first: it grips, nothing slides.
+  CLAMP  2 halves, 4 x M4 x 20 + nuts. Wrap the tube with 1 layer of bicycle inner tube first: it grips, nothing slides.
          Bore for a 22, 25 or 28 mm tube (print the TUBE SIZER first to find yours).
          Best on the VERTICAL backrest tube just behind the top of the tyre: slide it to any height.
          Also fits a horizontal tube (armrest): turn the clamp 90 degrees, the 4-nut cross pattern allows both.
   ARM    v2 for the Vissco Rodeo Veer: the clamp goes on the BARE ARMREST TUBE (14 cm between the foam and the weld).
-         Deck bolts on the spring bar (2 x M5, 80 mm sideways slots). Tall wall with 2 full-height slots: the clamp bolts
-         anywhere along 15 cm of height. A centre web + 6 gussets keep it stiff.
+         Deck screws on the hanger bar (2 x M4 x 12 + washers, 80 mm sideways slots). Tall wall with 2 full-height slots: the clamp bolts
+         anywhere along 15 cm of height (2 x M4 x 16 into the clamp's captive nuts). A centre web + 6 gussets keep it stiff.
 
 Coordinates as chair_drive_cq.py (wheel centre = origin, X forward, Z up, Y outboard). Units mm.
 Run: python3 chair_mount_cq.py
@@ -18,7 +18,13 @@ import chair_drive_cq as C
 
 OUT = C.OUT
 YMID = (C.POD_Y0 + C.POD_Y1) / 2
-M5 = 5.6; M5_HEAD = 9.6; M5_NUT_AF = 8.2; M5_NUT_T = 4.4
+M4, M4_NUT_AF, M4_NUT_T = C.M4, C.M4_NUT_AF, C.M4_NUT_T
+M4_CB = C.M4_HEAD + 0.6                 # counterbore for the button head
+CLAMP_L, ARM_L = 20, 16                 # clamp screws M4 x 20, arm-to-clamp screws M4 x 16
+CL_HEAD_Y = -9.3                        # clamp screw head seat (local Y): counterbore depth follows the tube size
+CL_NUT_Y = 6.5                          # clamp nut seat (local Y): nut Y 6.5..9.7, screw tip at CL_HEAD_Y + CLAMP_L
+NUT_FACE = 4.0                          # plastic between the arm nuts and the mount face
+DECK_CB = 5.0                           # deck slot counterbore (for the M4 x 12 head + washer)
 
 # ---------------- clamp ----------------
 LINER = 1.0                       # inner tube wrap (0.8-1 mm) -> bore = tube + 2 x LINER/2
@@ -29,9 +35,9 @@ SIDE = 12.0                       # material beside the bore (bolt bosses)
 CROSS = 20.0                      # mount nuts at (0, +/-20) and (+/-20, 0) on the face
 # ---------------- arm (v2: Vissco Rodeo Veer armrest tube, horizontal, about 12 cm inboard of the tyre) ----------------
 DECK_T, WALL_T, WEB_H = 10.0, 8.0, 16.0
-DECK_Z0 = C.BAR_Z1                                    # deck sits on top of the hanger (spring bar)
-DECK_X = 45.0                                         # deck is X -45..45: stays clear of the spring nuts at X +/-69
-DECK_SLOT_X = 36.0                                    # deck slots over the hanger holes at X +/-36 (80 mm sideways travel)
+DECK_Z0 = C.BAR_Z1                                    # deck sits on top of the hanger bar
+DECK_X = 45.0                                         # deck is X -45..45
+DECK_SLOT_X = C.ARM_HOLE_X                            # deck slots over the hanger holes at X +/-36 (80 mm sideways travel)
 DECK_SLOT_L = 80.0
 CLAMP_X = 20.0                                        # clamp bolts at X +/-20 (the clamp's nut pair along the tube)
 Y_T_NOM = -120.0                                      # armrest tube centre, nominal (sideways from the tyre centre)
@@ -55,29 +61,29 @@ def clamp_halves(D):
     outer, inner = outer.cut(bore), inner.cut(bore)
     for x in (-bx, bx):
         for z in (-18, 18):
-            hole = cq.Workplane("XZ").center(x, z).circle(M5 / 2).extrude(-80).translate((0, -40, 0))
+            hole = cq.Workplane("XZ").center(x, z).circle(M4 / 2).extrude(-80).translate((0, -40, 0))
             outer, inner = outer.cut(hole), inner.cut(hole)
-            inner = inner.cut(cq.Workplane("XZ").center(x, z).circle(M5_HEAD / 2 + 0.3).extrude(-20).translate((0, -(R + 6) - 1, 0))
-                              .translate((0, 0, 0)).intersect(box(-99, 99, -99, -(R + 6) + 4.5, -99, 99)))      # head counterbore
-            nut = (cq.Workplane("XZ").center(x, z).polygon(6, M5_NUT_AF / math.cos(math.pi / 6)).extrude(-(R + FACE)).translate((0, 6.5, 0)))
+            inner = inner.cut(cq.Workplane("XZ").center(x, z).circle(M4_CB / 2).extrude(-40).translate((0, -(R + 6) - 1, 0))
+                              .intersect(box(-99, 99, -99, CL_HEAD_Y, -99, 99)))                                 # head counterbore
+            nut = (cq.Workplane("XZ").center(x, z).polygon(6, M4_NUT_AF / math.cos(math.pi / 6)).extrude(-(R + FACE)).translate((0, CL_NUT_Y, 0)))
             outer = outer.cut(nut)                                                                                # nut drops in from the face side
-    # 4 captive M5 nuts for the arm, cross pattern; slid in from the top/bottom or the side
-    ny = R + FACE - 5.0 - M5_NUT_T / 2                                                                            # 5 mm of face in front of the nut
+    # 4 captive M4 nuts for the arm, cross pattern; slid in from the top/bottom or the side
+    ny = R + FACE - NUT_FACE - M4_NUT_T / 2                                                                       # NUT_FACE mm of face in front of the nut
     for (x, z, ax) in ((0, CROSS, "z"), (0, -CROSS, "z"), (CROSS, 0, "x"), (-CROSS, 0, "x")):
-        outer = outer.cut(cq.Workplane("XZ").center(x, z).circle(M5 / 2).extrude(-(FACE + 2)).translate((0, R + FACE - FACE + 2, 0)).translate((0, 0, 0))
+        outer = outer.cut(cq.Workplane("XZ").center(x, z).circle(M4 / 2).extrude(-(FACE + 2)).translate((0, R + FACE - FACE + 2, 0)).translate((0, 0, 0))
                           .intersect(box(-99, 99, R + 1.5, R + FACE + 1, -99, 99)))
-        pocket = (cq.Workplane("XZ").center(x, z).polygon(6, M5_NUT_AF / math.cos(math.pi / 6)).extrude(-M5_NUT_T).translate((0, ny + M5_NUT_T / 2, 0)))
+        pocket = (cq.Workplane("XZ").center(x, z).polygon(6, M4_NUT_AF / math.cos(math.pi / 6)).extrude(-M4_NUT_T).translate((0, ny + M4_NUT_T / 2, 0)))
         if ax == "z":
-            chan = box(x - M5_NUT_AF / 2, x + M5_NUT_AF / 2, ny - M5_NUT_T / 2, ny + M5_NUT_T / 2, min(z, math.copysign(CL_H, z)), max(z, math.copysign(CL_H, z)))
+            chan = box(x - M4_NUT_AF / 2, x + M4_NUT_AF / 2, ny - M4_NUT_T / 2, ny + M4_NUT_T / 2, min(z, math.copysign(CL_H, z)), max(z, math.copysign(CL_H, z)))
         else:
-            chan = box(min(x, math.copysign(99, x)), max(x, math.copysign(99, x)), ny - M5_NUT_T / 2, ny + M5_NUT_T / 2, z - M5_NUT_AF / 2, z + M5_NUT_AF / 2)
+            chan = box(min(x, math.copysign(99, x)), max(x, math.copysign(99, x)), ny - M4_NUT_T / 2, ny + M4_NUT_T / 2, z - M4_NUT_AF / 2, z + M4_NUT_AF / 2)
         outer = outer.cut(pocket).cut(chan)
     return outer, inner, R + FACE                         # last: mount face Y
 
 
 # ============================================================ ARM
 def arm(y_t=Y_T_NOM, face=None):
-    """wall (XZ plane) on the clamp's mount face + deck that sits on the spring bar.
+    """wall (XZ plane) on the clamp's mount face + deck that sits on the hanger bar.
     y_t = tube centre Y it is drawn for (the real arm slides +/-40 on the deck slots)."""
     if face is None: face = clamp_halves(25)[2]
     yw0 = y_t + face; yw1 = yw0 + WALL_T                                                # wall: inboard face touches the clamp
@@ -92,13 +98,15 @@ def arm(y_t=Y_T_NOM, face=None):
             a = a.union(cq.Workplane("YZ").polyline(pts).close().extrude(6).translate((x, 0, 0)))
     for s_ in (-1, 1):
         x = s_ * CLAMP_X                                                                  # clamp bolt slots, full height
-        a = a.cut(cq.Workplane("XZ").center(x, (WALL_Z0 + WALL_Z1) / 2).slot2D(WALL_Z1 - WALL_Z0 - 20, M5, 90)
+        a = a.cut(cq.Workplane("XZ").center(x, (WALL_Z0 + WALL_Z1) / 2).slot2D(WALL_Z1 - WALL_Z0 - 20, M4, 90)
                   .extrude(-(WALL_T + 2)).translate((0, yw0 - 1, 0)))
         a = a.cut(box(x - 6.5, x + 6.5, yw1 - 0.5, DECK_Y1 + 1, DECK_Z0 - 1, DECK_Z0 + DECK_T + WEB_H + 1))   # head + key channel
         for z0, z1 in ((DECK_Z0 + DECK_T, WALL_Z1), (WALL_Z0, DECK_Z0)):                  # ... and through the gussets
             a = a.cut(box(x - 6.5, x + 6.5, yw1 - 0.5, yw1 + 70, z0 - 1, z1 + 1))
         xs = s_ * DECK_SLOT_X                                                             # deck slots over the hanger holes
-        a = a.cut(cq.Workplane("XY").center(xs, YMID).slot2D(DECK_SLOT_L + M5, M5, 90).extrude(DECK_T + 2).translate((0, 0, DECK_Z0 - 1)))
+        a = a.cut(cq.Workplane("XY").center(xs, YMID).slot2D(DECK_SLOT_L + M4, M4, 90).extrude(DECK_T + 2).translate((0, 0, DECK_Z0 - 1)))
+        a = a.cut(cq.Workplane("XY").center(xs, YMID).slot2D(DECK_SLOT_L + 9.6, 9.6, 90).extrude(DECK_CB + 1)       # head + washer sink in
+                  .translate((0, 0, DECK_Z0 + DECK_T - DECK_CB)))
     return a
 
 

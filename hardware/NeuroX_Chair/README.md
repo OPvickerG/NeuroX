@@ -1,9 +1,12 @@
 # NeuroX Chair: top friction drive for a manual wheelchair
 
-Two Johnson 12 V 500 RPM geared motors sit on top of each rear tyre. Their rubber rollers press on the tread and drive the wheel. Tighten two nuts and the rollers lift off, so the chair can be pushed by hand again.
+Two Johnson 12 V 500 RPM geared motors sit on top of each rear tyre. Their rubber rollers press on the tread and drive the wheel. **No springs:** loops of bicycle inner tube pull the motor pod down. Lift the pod and tighten two lock bolts, and the rollers stay off the tyre so the chair can be pushed by hand again.
 Made for the **Vissco Rodeo Veer** (24" mag wheels). The whole unit clamps onto the **bare part of the armrest tube** (25 mm, the 14 cm between the grey foam and the weld at the backrest): rubber-lined, 4 bolts, no drilling.
+Every screw is from an **M3 + M4 button-head kit** (M4: 8–25 mm, hex nuts, washers).
 
 ![assembly](img/chair_drive_assembly.png)
+
+![one leg: band, spools and lock bolt](img/chair_band_detail.png)
 
 ## Numbers
 | | |
@@ -16,7 +19,7 @@ Made for the **Vissco Rodeo Veer** (24" mag wheels). The whole unit clamps onto 
 ## Print
 1. `NeuroX_Chair_tube_sizer.3mf` first (20 min): hold it against the armrest tube; the smallest hole that slides on is your size. Notches above the hole: 1 = 19, 2 = 20, 3 = 22, **4 = 25**, 5 = 28, 6 = 30, 7 = 32 mm.
 2. Per wheel, print each twice:
-   - `NeuroX_Chair_drive_ONE_WHEEL.3mf`: motor pod + spring bar + 2 roller cores
+   - `NeuroX_Chair_drive_ONE_WHEEL.3mf`: motor pod + hanger (bar with 2 legs) + 2 roller cores + 4 band spools
    - `NeuroX_Chair_mount_ONE_WHEEL_25mm_armrest.3mf` (or `_22mm_` / `_28mm_`): arm + 2 clamp halves
    - Before the pods: `NeuroX_Chair_MOTOR_fitcheck.3mf` (15 min): ring over the gearbox, roller on the shaft
 3. Optional: `NeuroX_Chair_rollers_TPU_x4.3mf` = solid 24 mm TPU rollers instead of cores + inner tube.
@@ -25,31 +28,48 @@ PETG if you have it, PLA works. 5 walls, 40 % gyroid, 0.2 mm, no supports; every
 
 ## Hardware (per wheel)
 - 2 x Johnson 12 V 500 RPM side-shaft geared motor
-- 4 x M3 x 12 + 4 x M3 nut: gearbox set screws (nuts slide into the pod slots)
-- 2 x M3 x 6 (or M3 x 8 grub) + 2 x M3 nut: roller set screws onto the shaft flat
-- 2 x M5 x 70 bolt + 2 x M5 nyloc or wing nut + washers: spring bolts
-- 2 x compression spring, 10–12 mm outside, about 45 mm long, 1–1.2 mm wire
-- Bicycle inner tube, 2 pieces about 20 mm long (roller sleeves)
-- Clamp: 4 x M5 x 30 + 4 x M5 nut; 1 piece of bicycle inner tube about 60 x 80 mm (liner)
-- Arm to clamp: 2 x M5 x 20 + washers + 2 x M5 nut (captive in the clamp)
-- Arm to spring bar: 2 x M5 x 25 + 2 x M5 nut + washers
+- **M3 kit:** 4 x M3 x 12 + 4 nuts (gearbox set screws), 2 x M3 x 6 or x 8 + 2 nuts (roller set screws)
+- **M4 kit** (button head Allen):
+
+| Where | Screws | Nuts | Washers |
+|---|---|---|---|
+| Clamp on the armrest | 4 x M4 x 20 | 4 | - |
+| Arm to clamp | 2 x M4 x 16 | 2 (captive in the clamp) | - |
+| Arm deck to hanger bar | 2 x M4 x 12 (cut their own thread in the bar) | - | 2 |
+| Lock bolts (top spools) | 2 x M4 x 25 | 2 (in the pod) | 2 |
+| Leg spools | 2 x M4 x 16 (cut their own thread in the leg) | - | 2 |
+
+  **Both wheels:** M4 x 25: 4, M4 x 20: 8, M4 x 16: 8, M4 x 12: 4, nuts: 16, washers: 12. Your kit (10 of each length, 20 nuts, 20 washers) covers it, with 4 nuts and 8 washers spare.
+- Bicycle inner tube: 2 roller sleeves (20 mm long), 1 clamp liner (60 x 80 mm), **2 band strips 6–8 mm wide x about 40 cm long**
 - Optional: 1 small hose clip under the clamp as a stop collar
+
+### Why bands and not springs
+There are no springs in the kit, and its longest screw is 25 mm, so the old spring bolts (M5 x 70) are gone. Inner-tube rubber makes a good spring: 3 stretched turns (6 strands) of a 6 mm strip pull roughly 30–50 N per side, more than the rollers need to grip (about 10 N each). More turns = more grip. It costs nothing, and you already need the tube for the rollers.
+If you buy springs later: any pulling (extension) spring about 30 mm long hooks onto the same two spools.
 
 ## Build
 1. **Rollers:** M3 nut into the slot, stretch a piece of inner tube over the core, screw the M3 x 6 into the nut. Push the roller on the shaft (the shaft tip at the outer face) and tighten the screw onto the **flat** of the shaft.
-2. **Pod:** slide 4 M3 nuts into the slots, push both gearboxes into the rings with the **shaft at the bottom**, both motors on the same side. Tighten the 4 M3 x 12 set screws.
-3. **Springs:** M5 bolt up through each pod tab, spring on the bolt, then through the hanger, washer + nut on top.
-4. **Clamp nuts:** drop 4 M5 nuts into the hex pockets of the outer clamp half (from the flat face). Slide 2 M5 nuts into the two slots in the **ends** of the outer half (the pair that ends up side by side along the armrest).
-5. **Arm on the spring bar:** 2 x M5 x 25 down through the deck slots and the spring-bar holes at X = ±36 (the outer pair), nuts underneath. Leave them loose.
-6. **On the chair:** wrap the bare armrest tube (between the foam and the weld) with one layer of inner tube. Put the two clamp halves round it with 4 x M5 x 30, flat face of the outer half facing the wheel. Snug, not tight.
-7. **Arm to clamp:** 2 x M5 x 20 through the two tall slots in the arm's wall into the clamp's end nuts. The heads sit in the channels in the deck; an Allen key reaches them from the wheel side. Leave them loose.
-8. **Line it up:** spring nuts loose. Slide the arm on the deck slots until the rollers sit on the **middle of the tread**, slide the clamp along the armrest until the rollers are over the top of the tyre, and push the arm **down** the wall slots until the springs squeeze about 10 mm. Tighten in this order: clamp bolts (firm, crosswise), then the 2 wall bolts, then the 2 deck bolts.
-9. **Engage:** spring nuts loose = rollers pressed on the tyre. **Disengage:** tighten both spring nuts until the rollers lift off. Push the chair by hand.
+2. **Pod:** slide 4 M3 nuts into the slots, push both gearboxes into the rings with the **shaft at the bottom**, both motors on the same side. Tighten the 4 M3 x 12 set screws. Drop one **M4 nut** into the slot on top of each end tab of the pod (it falls into place in line with the boss hole).
+3. **Pod into the hanger:** put the pod's two round bosses into the slots of the two hanger legs (from the inside). On each boss: spool (flat flange against the leg), washer, **M4 x 25 lock bolt** into the nut. Turn it until it just touches, then back half a turn: the pod must slide up and down freely.
+4. **Leg spools:** spool + washer + **M4 x 16** into the small hole at the bottom of each leg, tight (it cuts its own thread).
+5. **Clamp nuts:** drop 4 M4 nuts into the hex pockets of the outer clamp half (from the flat face). Slide 2 M4 nuts into the two slots in the **ends** of the outer half (the pair that ends up side by side along the armrest).
+6. **Arm on the hanger:** 2 x M4 x 12 + washers down through the deck slots into the bar holes at X = ±36. They cut their own thread; snug, so the arm can still slide.
+7. **On the chair:** wrap the bare armrest tube (between the foam and the weld) with one layer of inner tube. Put the two clamp halves round it with 4 x M4 x 20, flat face of the outer half facing the wheel. Snug, not tight.
+8. **Arm to clamp:** 2 x M4 x 16 through the two tall slots in the arm's wall into the clamp's end nuts. The heads sit in the channels in the deck; an Allen key reaches them from the wheel side. Leave them loose.
+9. **Line it up (no bands yet):** lock the pod with its bosses **6 mm above the bottom** of the slots (lock bolts tight). Slide the arm on the deck slots until the rollers are over the **middle of the tread**, slide the clamp along the armrest until the rollers are over the top of the tyre, and move the arm up/down the wall slots until the rollers **just touch** the tyre. Tighten: clamp bolts (firm, crosswise), then the 2 wall bolts, then the 2 deck screws.
+10. **Bands:** on each leg, tie one end of a strip round the lower spool, wrap it **3 turns** round both spools, pulling it to about twice its length, and tie it off. Loosen the lock bolts half a turn.
+11. **Test the grip:** lift the motors with one hand. It should take a firm pull (about 3 kg). Rollers slip under load = add a turn.
+
+### Drive / park
+- **Drive:** both lock bolts half a turn loose. The bands pull the rollers onto the tyre.
+- **Park (push by hand):** lift the motors up (the bosses go to the top of the slots) and tighten both lock bolts. The rollers stay about 1 cm off the tyre.
+- Before each ride: lock bolts loose, bands not cracked (replace them when they look dry or split).
 
 ### Fit (checked in CAD, `chair_mount_check.py`: 9 tube positions, driving and lifted)
 - Armrest tube centre **80–160 mm inboard** of the tyre centre (deck slots) and **29–159 mm above the top of the tyre** (wall slots).
 - Front/back: the clamp slides along the 14 cm of bare tube; the rollers work anywhere within ±30 mm of the top of the tyre.
-- Nothing touches the tyre (45 mm wide), push rim, motors or spring bolts.
+- Nothing touches the tyre (45 mm wide), push rim, motors, spools or bands: driving, dropped 5 mm and parked (`chair_check.py`).
+- Every screw length is checked against the kit (both check scripts).
 - The deck crosses over the black side guard about **7 cm above the top of the tyre**: check the guard's top edge is lower than that.
 
 ## Wiring
