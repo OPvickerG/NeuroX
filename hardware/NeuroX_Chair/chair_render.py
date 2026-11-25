@@ -6,6 +6,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import cadquery as cq
 import chair_drive_cq as C
 import chair_check as K
+import chair_mount_cq as Mt
 
 IMG = os.path.join(C.HERE, "img"); os.makedirs(IMG, exist_ok=True)
 
@@ -30,6 +31,10 @@ def rim_arc():
 
 PARTS = [(tyre_arc(), (0.16, 0.17, 0.19)), (rim_arc(), (0.10, 0.10, 0.12)), (K.motors(), (0.72, 0.74, 0.78)),
          (K.rollers(), (0.05, 0.05, 0.05)), (C.pod(), (0.13, 0.36, 0.85)), (C.hanger(), (0.85, 0.40, 0.10)), (K.bolts(), (0.55, 0.55, 0.58))]
+_o, _i, _f = Mt.clamp_halves(25)
+_wall = Mt.Y_WALL - Mt.WALL_T
+PARTS += [(Mt.arm(), (0.20, 0.62, 0.35)), (Mt.place_clamp(_o, 25, -40, _wall, Mt.ZC).union(Mt.place_clamp(_i, 25, -40, _wall, Mt.ZC)), (0.55, 0.30, 0.75)),
+          (C.cyl_z(-40, _wall - _f, 12.5, 330, 440), (0.82, 0.83, 0.85))]
 MESHES = [(mesh(w), c) for w, c in PARTS]
 L = np.array([0.3, 0.6, 0.75]); L /= np.linalg.norm(L)
 
@@ -40,12 +45,12 @@ def draw(ax, elev, azim):
         s = 0.35 + 0.65 * np.clip(np.abs(n @ L), 0, 1)
         fc = np.clip(np.array(col)[None] * s[:, None] * 1.5, 0, 1)
         ax.add_collection3d(Poly3DCollection(tri, facecolors=fc, edgecolors=fc, linewidths=0.05))
-    ax.set_xlim(-110, 110); ax.set_ylim(-60, 160); ax.set_zlim(250, 400); ax.set_box_aspect((220, 220, 150))
+    ax.set_xlim(-120, 120); ax.set_ylim(-110, 130); ax.set_zlim(270, 440); ax.set_box_aspect((240, 240, 170))
     ax.view_init(elev, azim); ax.set_axis_off()
 
 
 fig = plt.figure(figsize=(16, 7), facecolor="white")
-for i, (e, a, t) in enumerate(((22, -60, "from the outside, front"), (8, -90, "side view (wheel plane)"), (35, 200, "from behind, inside"))):
+for i, (e, a, t) in enumerate(((22, -55, "from the outside, front"), (6, -90, "side view (wheel plane)"), (30, 215, "from behind, inside: clamp on the backrest tube"))):
     ax = fig.add_subplot(1, 3, i + 1, projection="3d"); draw(ax, e, a); ax.set_title(t, fontsize=13)
-fig.suptitle("NeuroX chair drive: 2 Johnson motors on top of each rear tyre (blue = pod, orange = hanger, grey = motors)", fontsize=14)
+fig.suptitle("NeuroX chair drive: blue = motor pod, orange = spring bar, green = arm, purple = clamp on the backrest tube, grey = motors", fontsize=14)
 plt.tight_layout(); plt.savefig(os.path.join(IMG, "chair_drive_assembly.png"), dpi=110); print("saved")
