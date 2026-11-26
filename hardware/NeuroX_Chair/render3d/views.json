@@ -210,5 +210,494 @@
     "deck_hw"
    ]
   ]
+ },
+ "motor_1_nuts": {
+  "scene": "cu",
+  "title": "1  Nuts into the pod, before the motors (both rings, both ends)",
+  "only": [
+   "pod",
+   "cu_gbnut",
+   "cu_m4nut"
+  ],
+  "offsets": {
+   "cu_gbnut": [
+    0,
+    24,
+    0
+   ],
+   "cu_m4nut": [
+    0,
+    0,
+    30
+   ]
+  },
+  "cam": [
+   195.0,
+   335.0,
+   588.0
+  ],
+  "tgt": [
+   45,
+   35,
+   328
+  ],
+  "fov": 15,
+  "arrows": [
+   [
+    [
+     16.66556732878812,
+     54.0,
+     337.08337444000324
+    ],
+    [
+     16.66556732878812,
+     37.0,
+     337.08337444000324
+    ]
+   ],
+   [
+    [
+     49.605478382904174,
+     54.0,
+     337.08337444000324
+    ],
+    [
+     49.605478382904174,
+     37.0,
+     337.08337444000324
+    ]
+   ],
+   [
+    [
+     68.63552285584615,
+     34.7,
+     349.2634408317426
+    ],
+    [
+     68.63552285584615,
+     34.7,
+     332.2634408317426
+    ]
+   ]
+  ],
+  "labels": [
+   [
+    [
+     49.605478382904174,
+     32.0,
+     337.08337444000324
+    ],
+    "M3 nut: push into the slot in the outer face\n(2 per ring, 4 in total)",
+    170,
+    -170,
+    "cu_gbnut"
+   ],
+   [
+    [
+     68.63552285584615,
+     34.7,
+     327.2634408317426
+    ],
+    "M4 nut: drop into the slot on top\n(1 each end). It falls in line with the hole.",
+    -40,
+    200,
+    "cu_m4nut"
+   ]
+  ]
+ },
+ "motor_2_screws": {
+  "scene": "cu",
+  "title": "2  Motor in (shaft at the BOTTOM), 4 x M3 x 12 onto the gearbox",
+  "only": [
+   "pod",
+   "motor",
+   "cu_gbnut",
+   "cu_m4nut",
+   "cu_gbscrew0_-50",
+   "cu_gbscrew0_50",
+   "cu_gbscrew1_-50",
+   "cu_gbscrew1_50"
+  ],
+  "offsets": {
+   "cu_gbscrew0_-50": [
+    -12.256711089903648,
+    0.0,
+    10.28460175498463
+   ],
+   "cu_gbscrew0_50": [
+    12.256711089903648,
+    0.0,
+    10.28460175498463
+   ],
+   "cu_gbscrew1_-50": [
+    -12.256711089903648,
+    0.0,
+    10.28460175498463
+   ],
+   "cu_gbscrew1_50": [
+    12.256711089903648,
+    0.0,
+    10.28460175498463
+   ]
+  },
+  "cam": [
+   153.0,
+   335.0,
+   636.0
+  ],
+  "tgt": [
+   33,
+   35,
+   336
+  ],
+  "fov": 15,
+  "arrows": [
+   [
+    [
+     -10.529010401935597,
+     32.0,
+     359.90233458387536
+    ],
+    [
+     7.090011789800897,
+     32.0,
+     345.11821956108497
+    ]
+   ],
+   [
+    [
+     76.80005611362789,
+     32.0,
+     359.90233458387536
+    ],
+    [
+     59.1810339218914,
+     32.0,
+     345.11821956108497
+    ]
+   ]
+  ],
+  "labels": [
+   [
+    [
+     68.37356723931913,
+     32.0,
+     352.83167087732346
+    ],
+    "M3 x 12: turn in until it presses the\ngearbox, then 1/4 turn more",
+    120,
+    -110,
+    null
+   ],
+   [
+    [
+     -2.1025215276268394,
+     32.0,
+     352.83167087732346
+    ],
+    "2 per motor, into the nuts\nfrom step 1",
+    -150,
+    -110,
+    null
+   ],
+   [
+    [
+     33.13552285584615,
+     68.0,
+     341.2634408317426
+    ],
+    "both motors the same way round",
+    130,
+    70,
+    null
+   ]
+  ]
+ },
+ "motor_3_roller": {
+  "scene": "cu",
+  "title": "3  Rollers onto the shafts (seen from the tyre side)",
+  "only": [
+   "pod",
+   "motor",
+   "cu_roller0",
+   "cu_sleeve0",
+   "cu_rnut0",
+   "cu_rscrew0",
+   "cu_roller1",
+   "cu_sleeve1",
+   "cu_rnut1",
+   "cu_rscrew1",
+   "cu_gbscrew0_-50",
+   "cu_gbscrew0_50",
+   "cu_gbscrew1_-50",
+   "cu_gbscrew1_50"
+  ],
+  "offsets": {
+   "cu_roller1": [
+    0,
+    -40,
+    0
+   ],
+   "cu_rnut1": [
+    0,
+    -60,
+    0
+   ],
+   "cu_rscrew1": [
+    0,
+    -40,
+    26
+   ],
+   "cu_sleeve1": [
+    0,
+    -95,
+    0
+   ]
+  },
+  "cam": [
+   193.0,
+   -338.0,
+   488.0
+  ],
+  "tgt": [
+   33,
+   -30,
+   312
+  ],
+  "fov": 19,
+  "arrows": [
+   [
+    [
+     33.13552285584615,
+     -50.0,
+     298.2634408317426
+    ],
+    [
+     33.13552285584615,
+     -14.0,
+     298.2634408317426
+    ]
+   ],
+   [
+    [
+     33.13552285584615,
+     -61.0,
+     320.56344083174264
+    ],
+    [
+     33.13552285584615,
+     -51.0,
+     320.56344083174264
+    ]
+   ],
+   [
+    [
+     33.13552285584615,
+     -41.0,
+     353.7634408317426
+    ],
+    [
+     33.13552285584615,
+     -41.0,
+     330.2634408317426
+    ]
+   ],
+   [
+    [
+     33.13552285584615,
+     -85.0,
+     333.2634408317426
+    ],
+    [
+     33.13552285584615,
+     -54.0,
+     333.2634408317426
+    ]
+   ]
+  ],
+  "labels": [
+   [
+    [
+     33.13552285584615,
+     -41.0,
+     303.2634408317426
+    ],
+    "a  roller core onto the shaft\n    (shaft tip flush with the end)",
+    120,
+    110,
+    null
+   ],
+   [
+    [
+     33.13552285584615,
+     -61.0,
+     320.56344083174264
+    ],
+    "b  M3 nut into the slot in the end",
+    -230,
+    40,
+    null
+   ],
+   [
+    [
+     33.13552285584615,
+     -41.0,
+     349.7634408317426
+    ],
+    "c  turn the shaft so its FLAT faces up,\n    M3 x 6 down through the nut, tight",
+    120,
+    -100,
+    null
+   ],
+   [
+    [
+     33.13552285584615,
+     -96.0,
+     303.2634408317426
+    ],
+    "d  last: stretch the inner-tube sleeve\n    over the core (it covers the screw)",
+    190,
+    10,
+    null
+   ],
+   [
+    [
+     -33.13552285584615,
+     -1.0,
+     327.2634408317426
+    ],
+    "finished roller",
+    -150,
+    -110,
+    null
+   ]
+  ]
+ },
+ "motor_4_lock": {
+  "scene": "cu",
+  "title": "4  Pod into the legs: spool, washer, bolt (both legs)",
+  "only": [
+   "pod",
+   "motor",
+   "hanger",
+   "cu_roller0",
+   "cu_roller1",
+   "cu_sleeve0",
+   "cu_sleeve1",
+   "lockhw_spool",
+   "lockhw_washer",
+   "lockhw_screw",
+   "leghw_spool",
+   "leghw_washer",
+   "leghw_screw",
+   "cu_gbscrew0_-50",
+   "cu_gbscrew0_50",
+   "cu_gbscrew1_-50",
+   "cu_gbscrew1_50"
+  ],
+  "offsets": {
+   "lockhw_spool": [
+    0,
+    16,
+    0
+   ],
+   "lockhw_washer": [
+    0,
+    30,
+    0
+   ],
+   "lockhw_screw": [
+    0,
+    46,
+    0
+   ],
+   "leghw_spool": [
+    0,
+    16,
+    0
+   ],
+   "leghw_washer": [
+    0,
+    30,
+    0
+   ],
+   "leghw_screw": [
+    0,
+    46,
+    0
+   ]
+  },
+  "cam": [
+   322.0,
+   380.0,
+   438.0
+  ],
+  "tgt": [
+   62,
+   50,
+   318
+  ],
+  "fov": 17,
+  "arrows": [
+   [
+    [
+     68.63552285584615,
+     131.6,
+     323.2634408317426
+    ],
+    [
+     68.63552285584615,
+     108.6,
+     323.2634408317426
+    ]
+   ],
+   [
+    [
+     68.63552285584615,
+     131.6,
+     296.2634408317426
+    ],
+    [
+     68.63552285584615,
+     108.6,
+     296.2634408317426
+    ]
+   ]
+  ],
+  "labels": [
+   [
+    [
+     68.63552285584615,
+     104.6,
+     326.2634408317426
+    ],
+    "M4 x 25 + washer + spool into the M4 nut\nin the pod: just touching, then back 1/2 turn",
+    110,
+    -120,
+    null
+   ],
+   [
+    [
+     68.63552285584615,
+     104.6,
+     293.2634408317426
+    ],
+    "M4 x 16 + washer + spool into the\nsmall hole in the leg, tight",
+    110,
+    100,
+    null
+   ],
+   [
+    [
+     68.63552285584615,
+     47.6,
+     333.2634408317426
+    ],
+    "pod boss in the leg slot",
+    -200,
+    -130,
+    null
+   ]
+  ]
  }
 }

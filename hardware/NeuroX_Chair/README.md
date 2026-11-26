@@ -55,7 +55,9 @@ If you buy springs later: any pulling (extension) spring about 30 mm long hooks 
 ## Build
 ![assembly steps](img/chair_assembly_steps.png)
 
-1. **Rollers:** M3 nut into the slot, stretch a piece of inner tube over the core, screw the M3 x 6 into the nut. Push the roller on the shaft (the shaft tip at the outer face) and tighten the screw onto the **flat** of the shaft.
+![motor side, screw by screw](img/real_motor_steps.png)
+
+1. **Rollers:** push the roller core on the shaft (shaft tip flush with the end), M3 nut into the slot in the end, turn the shaft so its **flat** faces the screw hole, M3 x 6 down through the nut, tight. Last, stretch a 20 mm piece of inner tube over the core.
 2. **Pod:** slide 4 M3 nuts into the slots, push both gearboxes into the rings with the **shaft at the bottom**, both motors on the same side. Tighten the 4 M3 x 12 set screws. Drop one **M4 nut** into the slot on top of each end tab of the pod (it falls into place in line with the boss hole).
 3. **Pod into the hanger:** put the pod's two round bosses into the slots of the two hanger legs (from the inside). On each boss: spool (flat flange against the leg), washer, **M4 x 25 lock bolt** into the nut. Turn it until it just touches, then back half a turn: the pod must slide up and down freely.
 4. **Leg spools:** spool + washer + **M4 x 16** into the small hole at the bottom of each leg, tight (it cuts its own thread).

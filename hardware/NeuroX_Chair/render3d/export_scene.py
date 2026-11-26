@@ -44,8 +44,8 @@ def ring_y(cx, cz, r0, r1, y0, y1):
 parts = {}   # name -> (mesh, material, group)
 
 
-def add(name, mesh, mat, group):
-    parts[name] = (mesh, mat, group)
+def add(name, mesh, mat, group, scenes=("main", "cu")):
+    parts[name] = (mesh, mat, group, scenes)
 
 
 # ---------------- wheel + chair frame (context) ----------------
@@ -77,16 +77,16 @@ add("liner", m_of(cq.Workplane("YZ").center(yt, zt).circle(13.4).circle(12.5).ex
 add("pod", m_of(C.pod()), "pod", "pod")
 add("hanger", m_of(C.hanger()), "hanger", "hanger")
 for i, (x, gz) in enumerate(zip(C.RX, C.GZ)):
-    add(f"gearbox{i}", m_of(C.cyl_y(x, gz, C.GB_D / 2, C.YF, C.YF + C.GB_T).edges().chamfer(1.0)), "gearbox", "pod")
-    add(f"can{i}", m_of(C.cyl_y(x, gz, C.MOT_D / 2 - 0.5, C.YF + C.GB_T, C.YF + C.GB_T + C.MOT_L - 6)), "can", "pod")
+    add(f"gearbox{i}", m_of(C.cyl_y(x, gz, C.GB_D / 2, C.YF, C.YF + C.GB_T).edges().chamfer(1.0)), "gearbox", "motor")
+    add(f"can{i}", m_of(C.cyl_y(x, gz, C.MOT_D / 2 - 0.5, C.YF + C.GB_T, C.YF + C.GB_T + C.MOT_L - 6)), "can", "motor")
     add(f"cap{i}", m_of(C.cyl_y(x, gz, C.MOT_D / 2 - 2, C.YF + C.GB_T + C.MOT_L - 6, C.YF + C.GB_T + C.MOT_L)
-                        .union(C.prism_y(x - 9, x + 9, gz - 1.5, gz + 1.5, C.YF + C.GB_T + C.MOT_L, C.YF + C.GB_T + C.MOT_L + 6))), "cap", "pod")
-    add(f"boss{i}", m_of(C.cyl_y(x, gz - C.GB_E, 6.0, C.YF - C.BOSS, C.YF)), "gearbox", "pod")
-    add(f"shaft{i}", m_of(C.cyl_y(x, gz - C.GB_E, C.SHAFT_D / 2, C.YF - C.BOSS - C.SHAFT_L, C.YF - C.BOSS)), "steel", "pod")
+                        .union(C.prism_y(x - 9, x + 9, gz - 1.5, gz + 1.5, C.YF + C.GB_T + C.MOT_L, C.YF + C.GB_T + C.MOT_L + 6))), "cap", "motor")
+    add(f"boss{i}", m_of(C.cyl_y(x, gz - C.GB_E, 6.0, C.YF - C.BOSS, C.YF)), "gearbox", "motor")
+    add(f"shaft{i}", m_of(C.cyl_y(x, gz - C.GB_E, C.SHAFT_D / 2, C.YF - C.BOSS - C.SHAFT_L, C.YF - C.BOSS)), "steel", "motor")
 for i, (x, z) in enumerate(zip(C.RX, C.RZ)):
-    add(f"roller{i}", m_of(C.cyl_y(x, z, C.ROLL_R, C.ROLL_Y0 + 1.2, C.ROLL_Y0 + C.ROLL_W - 1.2)), "rubber", "pod")
+    add(f"roller{i}", m_of(C.cyl_y(x, z, C.ROLL_R, C.ROLL_Y0 + 1.2, C.ROLL_Y0 + C.ROLL_W - 1.2)), "rubber", "pod", ("main",))
     add(f"rollercore{i}", m_of(C.cyl_y(x, z, C.CORE_R + 0.8, C.ROLL_Y0, C.ROLL_Y0 + 1.2).union(C.cyl_y(x, z, C.CORE_R + 0.8, C.ROLL_Y0 + C.ROLL_W - 1.2, C.ROLL_Y0 + C.ROLL_W))
-                                  .cut(C.cyl_y(x, z, C.SHAFT_D / 2, C.ROLL_Y0 - 1, C.ROLL_Y0 + C.ROLL_W + 1))), "spool", "pod")
+                                  .cut(C.cyl_y(x, z, C.SHAFT_D / 2, C.ROLL_Y0 - 1, C.ROLL_Y0 + C.ROLL_W + 1))), "spool", "pod", ("main",))
 sp = trimesh.load(os.path.join(os.path.dirname(HERE), "stl", "spool.stl")); sp.apply_translation(-sp.bounds[0] - [sp.extents[0] / 2, sp.extents[1] / 2, 0])
 S25, S16, S20, S12 = screw_mesh(C.LOCK_L), screw_mesh(C.PIN_L), screw_mesh(Mt.CLAMP_L), screw_mesh(C.DECK_L)
 W = washer()
@@ -122,15 +122,17 @@ for s in (-1, 1):                                                       # deck -
     add(f"deckwasher{s}", place(W, at, [0, 0, -1]), "steel", "deck_hw")
     add(f"deckscrew{s}", place(S12, at, [0, 0, -1]), "black_steel", "deck_hw")
 
-for n, (m, mat, g) in parts.items():
+exec(open(os.path.join(HERE, "closeup.py")).read())        # close-up parts + views for the motor side
+
+for n, (m, mat, g, sc) in parts.items():
     m.export(os.path.join(OUT, n + ".stl"))
 
 # exploded offsets per group (chair coords)
-EXP = {"pod": [0, -70, -60], "lockhw_spool": [0, 22, 0], "lockhw_washer": [0, 38, 0], "lockhw_screw": [0, 55, 0],
+EXP = {"pod": [0, -70, -60], "motor": [0, -70, -60], "lockhw_spool": [0, 22, 0], "lockhw_washer": [0, 38, 0], "lockhw_screw": [0, 55, 0],
        "leghw_spool": [0, 22, 0], "leghw_washer": [0, 38, 0], "leghw_screw": [0, 55, 0], "band": [0, 22, 0],
        "arm": [0, 0, 90], "deck_hw": [0, 0, 160], "clamp_outer": [0, -45, 90], "clamp_inner": [0, -110, 90], "liner": [0, -45, 90],
        "clamp_screw": [0, -160, 90], "arm_screw": [0, 25, 90], "chair": [0, -45, 90]}
-json.dump({"materials": MAT, "parts": [{"name": n, "mat": mat, "group": g} for n, (m, mat, g) in parts.items()], "exploded": EXP,
+json.dump({"materials": MAT, "parts": [{"name": n, "mat": mat, "group": g, "scenes": list(sc)} for n, (m, mat, g, sc) in parts.items()], "exploded": EXP,
            "labels": {
                "pod": [0, C.POD_Y0, C.GZ[0] + 26], "hanger": [-C.BAR_X + 10, C.LEG_Y1, C.BAR_Z1], "lock": [C.TAB_X, C.SPOOL_Y1 + 3, C.GZ[0]],
                "leg": [C.TAB_X, C.SPOOL_Y1 + 3, C.FOOT_Z], "band": [C.TAB_X + C.SPOOL_CORE, C.LEG_Y1 + 3, (C.GZ[0] + C.FOOT_Z) / 2],

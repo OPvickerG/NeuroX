@@ -10,7 +10,7 @@ html,body{margin:0;background:#eef0f3;overflow:hidden;font-family:"DejaVu Sans",
 #lab{position:absolute;inset:0;pointer-events:none}
 .t{position:absolute;font-size:17px;color:#16181c;background:rgba(255,255,255,.88);padding:4px 8px;border-radius:6px;white-space:pre;line-height:1.3;
    box-shadow:0 1px 4px rgba(0,0,0,.18)}
-#ttl{position:absolute;left:22px;top:16px;font-size:24px;font-weight:600;color:#16181c}
+#ttl{position:absolute;left:16px;top:12px;font-size:24px;font-weight:600;color:#16181c;background:rgba(255,255,255,.9);padding:6px 12px;border-radius:8px;z-index:5}
 </style>
 <script type="importmap">{"imports":{"three":"/three/build/three.module.js","three/addons/":"/three/examples/jsm/"}}</script></head>
 <body><div id="ttl"></div><svg id="lab" width="100%" height="100%"></svg>
@@ -34,13 +34,16 @@ sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.6; scene.add(sun); scene.ad
 const toThree = (p) => new THREE.Vector3(p[0], p[2], -p[1]);
 const loader = new STLLoader();
 for (const p of S.parts) {
-  if (V.hide.includes(p.group) || V.hide.includes(p.name)) continue;
+  if (!p.scenes.includes(V.scene || "main")) continue;
+  if ((V.hide || []).includes(p.group) || (V.hide || []).includes(p.name)) continue;
+  if (V.only && !V.only.includes(p.group)) continue;
   const g = await new Promise((res) => loader.load("/out/" + p.name + ".stl", res));
   g.computeVertexNormals();
   const [col, met, rough] = S.materials[p.mat];
   const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: col, metalness: met, roughness: rough, envMapIntensity: 1.0 }));
   m.castShadow = m.receiveShadow = true;
-  const off = V.exploded ? (S.exploded[p.group] || [0, 0, 0]) : [0, 0, 0];
+  const OFF = V.offsets || (V.exploded ? S.exploded : {});
+  const off = OFF[p.group] || [0, 0, 0];
   m.position.set(off[0], off[1], off[2]);
   root.add(m);
 }
@@ -55,13 +58,20 @@ document.getElementById("ttl").textContent = V.title || "";
 // labels: anchor (chair coords, + exploded offset of its group), text, pixel offset
 const svg = document.getElementById("lab");
 for (const [key, txt, dx, dy, grp] of (V.labels || [])) {
-  const a = S.labels[key].slice(); const off = V.exploded && grp ? (S.exploded[grp] || [0, 0, 0]) : [0, 0, 0];
+  const a = (typeof key === "string" ? S.labels[key] : key).slice(); const OFL = V.offsets || (V.exploded ? S.exploded : {});
+  const off = grp ? (OFL[grp] || [0, 0, 0]) : [0, 0, 0];
   const p = toThree([a[0] + off[0], a[1] + off[1], a[2] + off[2]]).project(cam);
   const x = (p.x + 1) / 2 * W, y = (1 - p.y) / 2 * H, tx = x + dx, ty = y + dy;
   svg.insertAdjacentHTML("beforeend", '<line x1="' + x + '" y1="' + y + '" x2="' + tx + '" y2="' + ty + '" stroke="#16181c" stroke-width="1.6"/><circle cx="' + x + '" cy="' + y + '" r="3.5" fill="#16181c"/>');
   const d = document.createElement("div"); d.className = "t"; d.textContent = txt; document.body.appendChild(d);
   const bw = d.offsetWidth, bh = d.offsetHeight;
   d.style.left = (dx < 0 ? tx - bw : tx) + "px"; d.style.top = (ty - bh / 2) + "px";
+}
+svg.insertAdjacentHTML("afterbegin", '<defs><marker id="ah" markerUnits="userSpaceOnUse" markerWidth="20" markerHeight="20" refX="16" refY="10" orient="auto"><path d="M0,0 L20,10 L0,20 z" fill="#d0342c"/></marker></defs>');
+for (const [a, b] of (V.arrows || [])) {                       // red "moves this way" arrows, chair coords
+  const pa = toThree(a).project(cam), pb = toThree(b).project(cam);
+  const ax = (pa.x + 1) / 2 * W, ay = (1 - pa.y) / 2 * H, bx = (pb.x + 1) / 2 * W, by = (1 - pb.y) / 2 * H;
+  svg.insertAdjacentHTML("beforeend", '<line x1="' + ax + '" y1="' + ay + '" x2="' + bx + '" y2="' + by + '" stroke="#d0342c" stroke-width="3.5" stroke-dasharray="9 6" marker-end="url(#ah)"/>');
 }
 window.DONE = true;
 </script></body></html>`;
