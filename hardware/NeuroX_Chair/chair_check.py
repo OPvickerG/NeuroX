@@ -40,10 +40,14 @@ def motors(dz=0.0):
     return m
 
 
+_CUP = C.roller_cup().rotate((0, 0, 0), (1, 0, 0), -90)                         # axis along +Y, z = 0 end at Y = 0
+
+
 def rollers(dz=0.0, sleeve=True):
+    """the 2 CUP rollers (printed part; the rubber bands add CUP_DEEP to the groove floor)"""
     r = None
     for x, z in zip(C.RX, C.RZ):
-        c = C.cyl_y(x, z + dz, C.ROLL_R if sleeve else C.CORE_R, C.ROLL_Y0, C.ROLL_Y0 + C.ROLL_W)
+        c = _CUP.translate((x, C.ROLL_Y0, z + dz))
         r = c if r is None else r.union(c)
     return r
 
@@ -87,6 +91,13 @@ for z_off, label in ((0.0, "driving"), (-(C.TRAV_DN - 1.0), "dropped"), (LIFT, "
         check("both rollers touch the tyre crown", all(abs(g) < 0.6 for g in gaps), "gaps " + ", ".join(f"{g:+.2f}" for g in gaps) + " mm")
         cover = min(C.ROLL_Y0 + C.ROLL_W, C.TYRE_W / 2) - max(C.ROLL_Y0, -C.TYRE_W / 2)
         check("roller sits on the tyre tread", cover >= C.ROLL_W - 0.5, f"{cover:.1f} of {C.ROLL_W:.0f} mm on the tyre")
+        edge = [math.hypot(x, z) - C.cup_r(C.ROLL_W / 2) - ((C.R_T - C.TYRE_W / 2) + math.sqrt((C.TYRE_W / 2) ** 2 - (C.ROLL_W / 2) ** 2)) for x, z in zip(C.RX, C.RZ)]
+        check("cup hugs the crown, edges just clear", 0 < min(edge) < 1.5, f"band surface {min(edge):.2f} mm off the tyre at the cup edges")
+        check("printed cup clear of the tyre (bands do the touching)", vol(R, tyre) < 0.5, f"overlap {vol(R, tyre):.1f} mm3")
+        seat = C.SHAFT_D / 2 - 0.5 + C.ROLL_SCREW_L
+        check("M3 x 8 head sunk under the rubber bands", seat + 3.0 < C.ROLL_R - C.CUP_DEEP, f"socket head top r {seat + 3:.1f}, band seat r {C.ROLL_R - C.CUP_DEEP:.1f}")
+        check("cup clear of the gearbox boss", C.ROLL_Y0 + C.ROLL_W < C.YF - C.BOSS - 2, f"cup ends at Y {C.ROLL_Y0 + C.ROLL_W:.1f}, boss at {C.YF - C.BOSS:.1f}")
+        check("the two cups don't touch", 2 * C.X_ROLL > 2 * C.cup_r(C.ROLL_W / 2) + 5)
         check("shaft reaches into the roller", C.YF - C.BOSS - C.SHAFT_L <= C.ROLL_Y0 + C.ROLL_W / 2 - 2,
               f"shaft tip at Y {C.YF - C.BOSS - C.SHAFT_L:.1f}, roller Y {C.ROLL_Y0:.1f}..{C.ROLL_Y0 + C.ROLL_W:.1f}")
         check("band span 20-35 mm (band stretched, pulls down)", 20 <= span <= 35, f"{span:.1f} mm spool to spool")

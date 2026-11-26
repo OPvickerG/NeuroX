@@ -84,9 +84,10 @@ for i, (x, gz) in enumerate(zip(C.RX, C.GZ)):
     add(f"boss{i}", m_of(C.cyl_y(x, gz - C.GB_E, 6.0, C.YF - C.BOSS, C.YF)), "gearbox", "motor")
     add(f"shaft{i}", m_of(C.cyl_y(x, gz - C.GB_E, C.SHAFT_D / 2, C.YF - C.BOSS - C.SHAFT_L, C.YF - C.BOSS)), "steel", "motor")
 for i, (x, z) in enumerate(zip(C.RX, C.RZ)):
-    add(f"roller{i}", m_of(C.cyl_y(x, z, C.ROLL_R, C.ROLL_Y0 + 1.2, C.ROLL_Y0 + C.ROLL_W - 1.2)), "rubber", "pod", ("main",))
-    add(f"rollercore{i}", m_of(C.cyl_y(x, z, C.CORE_R + 0.8, C.ROLL_Y0, C.ROLL_Y0 + 1.2).union(C.cyl_y(x, z, C.CORE_R + 0.8, C.ROLL_Y0 + C.ROLL_W - 1.2, C.ROLL_Y0 + C.ROLL_W))
-                                  .cut(C.cyl_y(x, z, C.SHAFT_D / 2, C.ROLL_Y0 - 1, C.ROLL_Y0 + C.ROLL_W + 1))), "spool", "pod", ("main",))
+    _cup = m_of(C.roller_cup(), 0.05); _T = np.eye(4); _T[:3, :3] = [[0, 1, 0], [0, 0, 1], [1, 0, 0]]; _T[:3, 3] = [x, C.ROLL_Y0, z]
+    _cup.apply_transform(_T)
+    add(f"roller{i}", _cup, "spool", "pod", ("main",))
+    add(f"rollercore{i}", None, "rubber", "pod", ("main",))     # bands: filled in by closeup.py (BANDS)
 sp = trimesh.load(os.path.join(os.path.dirname(HERE), "stl", "spool.stl")); sp.apply_translation(-sp.bounds[0] - [sp.extents[0] / 2, sp.extents[1] / 2, 0])
 S25, S16, S20, S12 = screw_mesh(C.LOCK_L), screw_mesh(C.PIN_L), screw_mesh(Mt.CLAMP_L), screw_mesh(C.DECK_L)
 W = washer()
@@ -123,6 +124,8 @@ for s in (-1, 1):                                                       # deck -
     add(f"deckscrew{s}", place(S12, at, [0, 0, -1]), "black_steel", "deck_hw")
 
 exec(open(os.path.join(HERE, "closeup.py")).read())        # close-up parts + views for the motor side
+for i, (x, z) in enumerate(zip(C.RX, C.RZ)):
+    parts[f"rollercore{i}"] = (BANDS(x, z), "rubber", "pod", ("main",))
 
 for n, (m, mat, g, sc) in parts.items():
     m.export(os.path.join(OUT, n + ".stl"))

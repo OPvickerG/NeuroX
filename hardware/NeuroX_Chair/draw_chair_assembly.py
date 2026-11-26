@@ -81,20 +81,28 @@ ax.annotate("", (-x, C.GZ[0]), (-x, C.TAB_Z1 + 22), arrowprops=dict(arrowstyle="
 ax.set_xlim(-95, 95); ax.set_ylim(285, 395)
 ax.set_title("1  Pod: both motors in, same side, shafts at the bottom.\nTighten the 4 M3 x 12. Drop an M4 nut into each end tab.", fontsize=12, loc="left")
 
-# ---------------- 2. ROLLER (cut through the set screw) ----------------
+# ---------------- 2. CUP ROLLER (cut through the set screw), with the tyre crown under it ----------------
 ax = axs[1]
-fill(ax, section(C.roller(), "y", 0.0), "#555")
-R, W = C.CORE_R, C.ROLL_W
-for s in (-1, 1):
-    ax.add_patch(Rectangle((s * R if s > 0 else -R - 1.0, 1.2), 1.0, W - 2.4, fc=BAND, ec="k", zorder=3))
-ax.add_patch(Rectangle((-C.SHAFT_D / 2, -6), C.SHAFT_D, W + 2, fc=STEEL, ec="k", zorder=1, alpha=0.7, hatch=".."))
-ax.add_patch(Rectangle((1.6, W / 2 - 1.5), R - 1.6 - 0.5, 3.0, fc=STEEL, ec="k", hatch="////", zorder=6))
-note(ax, "inner tube sleeve\n(20 mm piece, stretched on)", (R + 0.6, W - 4), (R + 6, W + 4))
-note(ax, "M3 x 6 set screw\nonto the FLAT of the shaft", (R - 2, W / 2), (R + 6, W / 2 - 4))
-note(ax, "M3 nut slot\n(from this face)", (5.3, 2), (R + 6, -6))
-note(ax, "motor shaft goes in here", (0, -4), (-R - 22, -9), ha="left")
-ax.set_xlim(-R - 24, R + 32); ax.set_ylim(-12, W + 10)
-ax.set_title("2  Rollers (x2): M3 nut in the slot, inner tube over the core,\npush onto the shaft, M3 x 6 tight on the shaft flat.", fontsize=12, loc="left")
+fill(ax, section(C.roller_cup(), "y", 0.0), "#555")
+W = C.ROLL_W; rw = (W - C.CUP_N * C.CUP_GROOVE) / (C.CUP_N + 1)
+for k in range(C.CUP_N):                                                     # rubber bands in the grooves (both sides of the cut)
+    zc = rw * (k + 1) + C.CUP_GROOVE * (k + 0.5); r1 = C.cup_r(zc - W / 2) + 0.1
+    for s_ in (-1, 1):
+        ax.add_patch(Circle((s_ * (r1 - 0.8), zc), 0.85, fc=BAND, ec="k", lw=0.5, zorder=4))
+seat = C.SHAFT_D / 2 - 0.5 + C.ROLL_SCREW_L
+ax.add_patch(Rectangle((C.SHAFT_D / 2 - 0.5, W / 2 - 1.5), C.ROLL_SCREW_L, 3.0, fc=STEEL, ec="k", hatch="////", zorder=6))
+ax.add_patch(Rectangle((seat, W / 2 - 2.75), 3.0, 5.5, fc=STEEL, ec="k", zorder=6))
+ax.add_patch(Rectangle((4.6, W / 2 - 2.75), 2.4, 5.5, fc=NUT, ec="k", zorder=7))
+ax.add_patch(Rectangle((-C.SHAFT_D / 2, W - 26), C.SHAFT_D, 30, fc=STEEL, ec="k", zorder=1, alpha=0.7, hatch=".."))
+yy = np.linspace(-C.TYRE_W / 2 + 0.5, C.TYRE_W / 2 - 0.5, 80)                   # tyre crown, seen in the same cut (rotated: tyre below = -X)
+ax.plot(-(C.ROLL_R + C.TYRE_W / 2 - np.sqrt((C.TYRE_W / 2) ** 2 - yy ** 2)), yy + W / 2, color=TYRE, lw=3)
+note(ax, "rubber bands: 1-2 in each\nof the 5 grooves, wrapped tight", (C.cup_r(9) - 0.5, W / 2 + 9), (C.ROLL_R + 10, W + 4))
+note(ax, "M3 x 8 onto the FLAT of the shaft\n(head sits under the bands)", (seat + 1.5, W / 2), (C.ROLL_R + 10, W / 2 - 2))
+note(ax, "M3 nut, slides in\nfrom this end", (5.8, 1), (C.ROLL_R + 10, -8))
+note(ax, "motor shaft\n(from the motor end)", (0, W + 2), (-C.ROLL_R - 26, W + 8), ha="left")
+note(ax, "tyre crown:\nthe cup hugs it", (-C.ROLL_R - 0.5, W / 2 - 8), (-C.ROLL_R - 30, -8), ha="left")
+ax.set_xlim(-C.ROLL_R - 32, C.ROLL_R + 42); ax.set_ylim(-14, W + 14)
+ax.set_title("2  Cup rollers (x2): onto the shaft, M3 nut in the slot, M3 x 8 tight on\nthe shaft flat, then rubber bands in the 5 grooves.", fontsize=12, loc="left")
 
 # ---------------- 3. POD INTO THE LEGS: the lock bolt and the leg spool (cut through one leg) ----------------
 ax = axs[2]

@@ -32,9 +32,15 @@ MOT_D, MOT_L = 36.0, 57.0                    # motor can
 BOSS, SHAFT_D, SHAFT_L = 3.0, 6.0, 29.0      # shaft sticks out SHAFT_L from the boss
 YF = 21.0                                    # gearbox shaft-side face, outboard of the tyre centre plane
 # ---------------- roller ----------------
-CORE_R, ROLL_R, ROLL_W = 10.5, 12.0, 18.0    # printed core, core + inner-tube sleeve, width
-ROLL_Y0 = YF - BOSS - SHAFT_L + 1.0          # roller outer face (just past the shaft tip)
-PHI = 6.0                                     # rollers at +/- PHI degrees from the top of the tyre
+# CUP roller: hugs the round tyre crown, 5 grooves for rubber bands, M3 x 8 set screw (head sunk under the bands)
+ROLL_R = 15.5                                 # contact radius at the middle (printed groove + rubber band)
+ROLL_W = 30.0                                 # cup width (tyre is 45 wide)
+ROLL_Y0 = -ROLL_W / 2                         # cup centred on the tyre
+CUP_P = 24.0                                  # cup profile radius (tyre crown is ~22.5: contact in the middle, edges just clear)
+CUP_N, CUP_GROOVE, CUP_DEEP, CUP_RIDGE = 5, 5.0, 1.4, 0.6   # grooves, groove width (top), band seat below contact, ridge below contact
+ROLL_SCREW_L = 8.0                            # M3 x 8 (smallest in the kit)
+CORE_R, OLD_ROLL_R, OLD_ROLL_W = 10.5, 12.0, 18.0   # old small roller (kept for reference)
+X_ROLL = (305.0 + OLD_ROLL_R) * math.sin(math.radians(6.0))   # roller shafts stay at X = +/-33.1: pod, hanger, arm unchanged
 # ---------------- pod / hanger ----------------
 RING_ID = GB_D + 1.0; RING_WALL = 6.0; RING_OD = RING_ID + 2 * RING_WALL
 POD_Y0, POD_Y1 = YF + 2.0, YF + GB_T - 2.0   # pod slab (on the gearbox only, motor can starts at YF + GB_T)
@@ -52,8 +58,9 @@ FOOT_DZ = 27.0                              # band span (boss to leg spool) when
 ARM_HOLE_X = 36.0                           # arm deck screws (M4 x 12) go into the bar here
 
 R_C = R_T + ROLL_R                            # roller centre radius
-RX = [R_C * math.sin(math.radians(a)) for a in (-PHI, PHI)]
-RZ = [R_C * math.cos(math.radians(a)) for a in (-PHI, PHI)]
+RX = [-X_ROLL, X_ROLL]
+RZ = [math.sqrt(R_C ** 2 - X_ROLL ** 2)] * 2
+PHI = math.degrees(math.asin(X_ROLL / R_C))
 GZ = [z + GB_E for z in RZ]                   # gearbox centres (shaft at the bottom of the gearbox)
 TAB_X = max(abs(x) for x in RX) + RING_OD / 2 + 11.0
 TAB_Z0, TAB_Z1 = GZ[0] - 6.0, GZ[0] + 6.0
@@ -160,7 +167,8 @@ def spool():
 
 # ============================================================ ROLLER (made upright: axis = Z, z=0 is the outer face)
 def roller(tpu=False):
-    R = ROLL_R if tpu else CORE_R
+    R = OLD_ROLL_R if tpu else CORE_R
+    ROLL_W = OLD_ROLL_W
     r = cq.Workplane("XY").circle(R).extrude(ROLL_W)
     if not tpu:
         for z0 in (0, ROLL_W - 1.2):                                                        # lips keep the sleeve on
@@ -170,6 +178,41 @@ def roller(tpu=False):
     r = r.cut(cyl_axis((R + 1, 0, zm), (-1, 0, 0), 1.65, R + 1))                                # M3 set screw
     r = r.cut(cyl_axis((R + 1, 0, zm), (-1, 0, 0), 3.3, R + 1 - 7.0))                           # head pocket (head below the surface)
     r = r.cut(cq.Workplane("XY").box(2.8, 5.9, zm + 3, centered=False).translate((3.9, -2.95, -1)))  # M3 nut slot, from the outer face
+    return r
+
+
+def cup_r(y):
+    """contact radius (band surface) at Y offset y from the cup middle"""
+    return ROLL_R + CUP_P - math.sqrt(CUP_P ** 2 - y ** 2)
+
+
+def roller_cup():
+    """CUP roller, made upright: axis = Z, z = 0 is the end at the shaft tip (tyre centre at z = ROLL_W / 2).
+    Grooves: band seat CUP_DEEP below the contact line, ridges CUP_RIDGE below it (45 degree walls: prints without support)."""
+    W = ROLL_W; rw = (W - CUP_N * CUP_GROOVE) / (CUP_N + 1); wall = CUP_DEEP - CUP_RIDGE
+    marks = []                                          # (z, depth below contact)
+    z = 0.0
+    for k in range(CUP_N):
+        ze = z + rw + CUP_GROOVE                                                  # groove end
+        yy = ze - W / 2; slope = max(0.0, yy / math.sqrt(CUP_P ** 2 - yy ** 2))     # upper half: the surface leans out
+        wu = wall / (1.0 - slope) + 0.05                                          # longer up-wall keeps it <= 45 degrees
+        marks += [(z, CUP_RIDGE), (z + rw, CUP_RIDGE), (z + rw + wall, CUP_DEEP), (ze - wu, CUP_DEEP)]
+        z += rw + CUP_GROOVE
+    marks += [(z, CUP_RIDGE), (W, CUP_RIDGE)]
+    pts = [(0.0, 0.0)]
+    for (z0, d0), (z1, d1) in zip(marks[:-1], marks[1:]):
+        n = max(1, int((z1 - z0) / 0.5))
+        for j in range(n):
+            t = j / n; zz = z0 + t * (z1 - z0); dd = d0 + t * (d1 - d0)
+            pts.append((cup_r(zz - W / 2) - dd, zz))
+    pts += [(cup_r(W / 2) - CUP_RIDGE, W), (0.0, W)]
+    r = cq.Workplane("XZ").polyline(pts).close().revolve(360, (0, 0, 0), (0, 1, 0))
+    r = r.cut(cq.Workplane("XY").circle(SHAFT_D / 2 + 0.12).extrude(W + 2).translate((0, 0, -1)))
+    zm = W / 2
+    seat = SHAFT_D / 2 - 0.5 + ROLL_SCREW_L                                                    # screw tip on the shaft flat
+    r = r.cut(cyl_axis((40, 0, zm), (-1, 0, 0), 1.65, 40 - 2.5))                                 # M3 hole
+    r = r.cut(cyl_axis((40, 0, zm), (-1, 0, 0), 3.3, 40 - seat))                                 # head pocket, under the bands
+    r = r.cut(cq.Workplane("XY").box(2.8, 5.9, zm + 3, centered=False).translate((4.4, -2.95, -1)))   # M3 nut slot, from the shaft-tip end
     return r
 
 
@@ -192,5 +235,5 @@ if __name__ == "__main__":
           "watertight:", all(m.is_watertight for m in (pp, hp, m_rol, m_tpu, m_sp)))
     print("volumes cm3:", {n: round(m.volume / 1000, 1) for n, m in (("pod", pp), ("hanger", hp), ("roller", m_rol))})
     json.dump(dict(FOOT_Z=FOOT_Z, LEG_Y=[LEG_Y0, LEG_Y1], LEG_Z0=LEG_Z0, R_T=R_T, TYRE_W=TYRE_W, RX=RX, RZ=RZ, GZ=GZ, TAB_X=TAB_X, TAB_Z=[TAB_Z0, TAB_Z1], BAR_Z=[BAR_Z0, BAR_Z1], BAR_X=BAR_X,
-                   POD_Y=[POD_Y0, POD_Y1], YF=YF, GB=[GB_D, GB_T, GB_E], MOT=[MOT_D, MOT_L], ROLL=[CORE_R, ROLL_R, ROLL_W, ROLL_Y0],
+                   POD_Y=[POD_Y0, POD_Y1], YF=YF, GB=[GB_D, GB_T, GB_E], MOT=[MOT_D, MOT_L], ROLL=[ROLL_R, ROLL_W, ROLL_Y0],
                    RIM=[RIM_R, RIM_Y, RIM_D], BOSS=BOSS, SHAFT=[SHAFT_D, SHAFT_L]), open(os.path.join(OUT, "geometry.json"), "w"), indent=1)
