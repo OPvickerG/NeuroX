@@ -6,6 +6,11 @@ Every screw is from an **M3 + M4 button-head kit** (M4: 8–25 mm, hex nuts, was
 
 ![assembly](img/chair_drive_assembly.png)
 
+![on the wheel](img/real_overview.png)
+![drive unit](img/real_drive.png)
+![mount on the armrest](img/real_mount.png)
+![exploded](img/real_exploded.png)
+
 ![one leg: band, spools and lock bolt](img/chair_band_detail.png)
 
 ## Numbers
@@ -56,9 +61,9 @@ If you buy springs later: any pulling (extension) spring about 30 mm long hooks 
 4. **Leg spools:** spool + washer + **M4 x 16** into the small hole at the bottom of each leg, tight (it cuts its own thread).
 5. **Clamp nuts:** drop 4 M4 nuts into the hex pockets of the outer clamp half (from the flat face). Slide 2 M4 nuts into the two slots in the **ends** of the outer half (the pair that ends up side by side along the armrest).
 6. **Arm on the hanger:** 2 x M4 x 12 + washers down through the deck slots into the bar holes at X = ±36. They cut their own thread; snug, so the arm can still slide.
-7. **On the chair:** wrap the bare armrest tube (between the foam and the weld) with one layer of inner tube. Put the two clamp halves round it with 4 x M4 x 20, flat face of the outer half facing the wheel. Snug, not tight.
+7. **On the chair:** wrap the bare armrest tube (between the foam and the weld) with one layer of inner tube. Put the two clamp halves round it with 4 x M4 x 20, flat face of the outer half facing the wheel. Just snug for now, so it can still slide.
 8. **Arm to clamp:** 2 x M4 x 16 through the two tall slots in the arm's wall into the clamp's end nuts. The heads sit in the channels in the deck; an Allen key reaches them from the wheel side. Leave them loose.
-9. **Line it up (no bands yet):** lock the pod with its bosses **6 mm above the bottom** of the slots (lock bolts tight). Slide the arm on the deck slots until the rollers are over the **middle of the tread**, slide the clamp along the armrest until the rollers are over the top of the tyre, and move the arm up/down the wall slots until the rollers **just touch** the tyre. Tighten: clamp bolts (firm, crosswise), then the 2 wall bolts, then the 2 deck screws.
+9. **Line it up (no bands yet):** lock the pod with its bosses **6 mm above the bottom** of the slots (lock bolts tight). Slide the arm on the deck slots until the rollers are over the **middle of the tread**, slide the clamp along the armrest until the rollers are over the top of the tyre, and move the arm up/down the wall slots until the rollers **just touch** the tyre. Tighten: clamp bolts **hard**, a little at a time, crosswise, until the halves are about 1 mm apart and the clamp can't be twisted on the tube by hand; then the 2 wall bolts, then the 2 deck screws. The clamp halves have a 4 mm gap, so they can squeeze a lot. If they touch and the clamp still turns, add a second layer of inner tube.
 10. **Bands:** on each leg, tie one end of a strip round the lower spool, wrap it **3 turns** round both spools, pulling it to about twice its length, and tie it off. Loosen the lock bolts half a turn.
 11. **Test the grip:** lift the motors with one hand. It should take a firm pull (about 3 kg). Rollers slip under load = add a turn.
 

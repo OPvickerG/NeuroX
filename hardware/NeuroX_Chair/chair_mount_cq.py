@@ -28,7 +28,7 @@ DECK_CB = 5.0                           # deck slot counterbore (for the M4 x 12
 
 # ---------------- clamp ----------------
 LINER = 1.0                       # inner tube wrap (0.8-1 mm) -> bore = tube + 2 x LINER/2
-GAP = 2.0                         # gap between the halves = how much the clamp can squeeze
+GAP = 4.0                         # gap between the halves = how much the clamp can squeeze (4 mm: grips even a thin liner)
 CL_H = 60.0                       # clamp length along the tube
 FACE = 14.0                       # material from the bore to the mount face
 SIDE = 12.0                       # material beside the bore (bolt bosses)

@@ -1,0 +1,214 @@
+{
+ "overview": {
+  "title": "NeuroX chair drive on the wheel",
+  "cam": [
+   1700,
+   2300,
+   1250
+  ],
+  "tgt": [
+   0,
+   -40,
+   160
+  ],
+  "fov": 20,
+  "floor": true,
+  "hide": [],
+  "labels": [
+   [
+    "motor",
+    "2 motors",
+    120,
+    -70,
+    null
+   ],
+   [
+    "clamp",
+    "arm + clamp on the armrest",
+    -150,
+    -110,
+    null
+   ],
+   [
+    "band",
+    "rubber band",
+    140,
+    40,
+    null
+   ]
+  ]
+ },
+ "drive": {
+  "title": "Drive unit (from outside the wheel)",
+  "cam": [
+   620,
+   1150,
+   760
+  ],
+  "tgt": [
+   0,
+   10,
+   340
+  ],
+  "fov": 16,
+  "hide": [
+   "seatrail"
+  ],
+  "labels": [
+   [
+    "lock",
+    "lock bolt M4 x 25\nloose = drive, tight = park",
+    170,
+    -110,
+    null
+   ],
+   [
+    "leg",
+    "M4 x 16 + spool",
+    160,
+    90,
+    null
+   ],
+   [
+    "band",
+    "inner-tube band, 3 turns",
+    -260,
+    -40,
+    null
+   ],
+   [
+    "motor",
+    "motor",
+    -40,
+    -260,
+    null
+   ],
+   [
+    "hanger",
+    "hanger",
+    130,
+    -120,
+    null
+   ]
+  ]
+ },
+ "mount": {
+  "title": "Mount on the armrest (from inside, behind)",
+  "cam": [
+   -900,
+   -1000,
+   950
+  ],
+  "tgt": [
+   0,
+   -60,
+   370
+  ],
+  "fov": 18,
+  "hide": [
+   "seatrail"
+  ],
+  "labels": [
+   [
+    "clamp",
+    "clamp: 4 x M4 x 20, tight",
+    -200,
+    -120,
+    null
+   ],
+   [
+    "clampscrew",
+    "screw heads in the round half",
+    -230,
+    80,
+    null
+   ],
+   [
+    "arm",
+    "arm",
+    140,
+    -120,
+    null
+   ],
+   [
+    "deck",
+    "2 x M4 x 12 into the bar",
+    160,
+    -40,
+    null
+   ],
+   [
+    "roller",
+    "roller on the tyre",
+    180,
+    60,
+    null
+   ]
+  ]
+ },
+ "exploded": {
+  "title": "How it goes together (exploded)",
+  "cam": [
+   1050,
+   1250,
+   1050
+  ],
+  "tgt": [
+   0,
+   -50,
+   390
+  ],
+  "fov": 22,
+  "exploded": true,
+  "hide": [
+   "wheel",
+   "seatrail",
+   "backrest",
+   "foam"
+  ],
+  "labels": [
+   [
+    "motor",
+    "1  pod + motors + rollers\n    (pushes into the legs from inside)",
+    -380,
+    60,
+    "pod"
+   ],
+   [
+    "lock",
+    "2  spool, washer, M4 x 25 lock bolt",
+    140,
+    -30,
+    "lockhw_screw"
+   ],
+   [
+    "leg",
+    "3  spool, washer, M4 x 16",
+    150,
+    50,
+    "leghw_screw"
+   ],
+   [
+    "clamp",
+    "4  clamp halves round the armrest\n    4 x M4 x 20 (tight)",
+    -300,
+    -60,
+    "clamp_outer"
+   ],
+   [
+    "armscrew",
+    "5  2 x M4 x 16: arm wall to clamp",
+    150,
+    -190,
+    "arm_screw"
+   ],
+   [
+    "deck",
+    "6  2 x M4 x 12 + washers: arm to hanger bar",
+    220,
+    -50,
+    "deck_hw"
+   ]
+  ]
+ }
+}
